@@ -16,13 +16,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.DriveElevatorToPosition;
-import frc.robot.commands.EndEffectorSequencing;
-import frc.robot.commands.RunAlgaeRemover;
-import frc.robot.commands.RunEndEffector;
-import frc.robot.subsystems.AlgaeRemover;
-import frc.robot.subsystems.EndEffector;
-import frc.robot.subsystems.swervedrive.Elevator;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -35,9 +28,6 @@ import swervelib.SwerveInputStream;
 public class RobotContainer
 {
   //Setup subsystems here for use with commands later
-private Elevator elevator = new Elevator();
-private EndEffector endEffector = new EndEffector();
-private AlgaeRemover algaeRemover = new AlgaeRemover();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   final         CommandXboxController driverXbox = new CommandXboxController(0);
   // The robot's subsystems and commands are defined here...
@@ -143,16 +133,19 @@ private AlgaeRemover algaeRemover = new AlgaeRemover();
     }
     if (DriverStation.isTest())
     {
+      // This is for test mode only
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
 
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
+      // driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
       driverXbox.leftBumper().onTrue(Commands.none());
       driverXbox.rightBumper().onTrue(Commands.none());
     } else
     {
+      // Teleop controls
+
       //driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       //driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
       //driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
@@ -164,26 +157,6 @@ private AlgaeRemover algaeRemover = new AlgaeRemover();
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
-      // Level 1
-      driverXbox.a().onTrue(new DriveElevatorToPosition(elevator, 0.4, 1));
-      // Level 2
-      driverXbox.x().onTrue(new DriveElevatorToPosition(elevator, 0.4, 12.5));
-      // Level 3
-      driverXbox.b().onTrue(new DriveElevatorToPosition(elevator, 0.4, 35));
-      // Level 4
-      driverXbox.y().onTrue(new DriveElevatorToPosition(elevator, 0.4, 65));
-      // Intake Coral
-      driverXbox.leftTrigger().onTrue(new EndEffectorSequencing(endEffector));
-      // Spit Out Coral
-      driverXbox.rightTrigger().whileTrue(new RunEndEffector(endEffector));
-      // Algae Remover
-      driverXbox.povLeft().onTrue(new RunAlgaeRemover(algaeRemover, 0.0, 0.0));
-      //  WE NEED TO CHANGE THE ALGAE POWER AND POSITION FOR BOTH OF THESE LINES BASED ON ENCODER VALUES FROM THE SHUFFLEBOARD!
-      driverXbox.povRight().onTrue(new RunAlgaeRemover(algaeRemover, 0.0, 0.0));
-      
-      //Just move the Algae remover manually
-      //driverXbox.povUp().whileTrue(new RunAlgaeRemover(algaePositive));
-      //driverXbox.povDown().whileTrue(new RunAlgaeRemover(algaeNegative));
     }
 
   }
