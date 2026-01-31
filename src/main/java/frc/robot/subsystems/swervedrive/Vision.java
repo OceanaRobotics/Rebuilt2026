@@ -335,33 +335,33 @@ public class Vision
    */
   enum Cameras
   {
+    // /**
+    //  * Left Camera
+    //  */
+    // LEFT_CAM("left",
+    //          new Rotation3d(0, Math.toRadians(-24.094), Math.toRadians(30)),
+    //          new Translation3d(Units.inchesToMeters(12.056),
+    //                            Units.inchesToMeters(10.981),
+    //                            Units.inchesToMeters(8.44)),
+    //          VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
+    // /**
+    //  * Right Camera
+    //  */
+    // RIGHT_CAM("right",
+    //           new Rotation3d(0, Math.toRadians(-24.094), Math.toRadians(-30)),
+    //           new Translation3d(Units.inchesToMeters(12.056),
+    //                             Units.inchesToMeters(-10.981),
+    //                             Units.inchesToMeters(8.44)),
+    //           VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
     /**
-     * Left Camera
+     * The camera name
      */
-    LEFT_CAM("left",
-             new Rotation3d(0, Math.toRadians(-24.094), Math.toRadians(30)),
-             new Translation3d(Units.inchesToMeters(12.056),
-                               Units.inchesToMeters(10.981),
-                               Units.inchesToMeters(8.44)),
-             VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
-    /**
-     * Right Camera
-     */
-    RIGHT_CAM("right",
-              new Rotation3d(0, Math.toRadians(-24.094), Math.toRadians(-30)),
-              new Translation3d(Units.inchesToMeters(12.056),
-                                Units.inchesToMeters(-10.981),
-                                Units.inchesToMeters(8.44)),
-              VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)),
-    /**
-     * Center Camera
-     */
-    CENTER_CAM("center",
-               new Rotation3d(0, Units.degreesToRadians(18), 0),
-               new Translation3d(Units.inchesToMeters(-4.628),
-                                 Units.inchesToMeters(-10.687),
-                                 Units.inchesToMeters(16.129)),
-               VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1));
+    limelight("center",
+               new Rotation3d(0, Units.degreesToRadians(-35), 0), // Roll is unknown, Pitch increases down, Yaw increases counter-clockwise
+               new Translation3d(Units.inchesToMeters(14.75), // X increases forwards
+                                 Units.inchesToMeters(0.25), // Y increases leftwards
+                                 Units.inchesToMeters(13)), // Z increases upwards
+               VecBuilder.fill(4, 4, 8), VecBuilder.fill(0.5, 0.5, 1)); // Don't touch these, I think
 
     /**
      * Latency alert to use when high latency is detected.
