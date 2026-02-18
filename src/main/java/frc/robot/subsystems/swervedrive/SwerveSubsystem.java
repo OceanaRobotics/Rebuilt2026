@@ -30,6 +30,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -66,15 +67,15 @@ public class SwerveSubsystem extends SubsystemBase
   /**
    * AprilTag field layout.
    */
-  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
   /**
    * Enable vision odometry updates while driving.
    */
-  private final boolean             visionDriveTest     = false;
+  private final boolean             visionDriveTest     = true;
   /**
    * PhotonVision class to keep an accurate odometry.
    */
-  private Vision vision;
+  public Vision vision;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -88,8 +89,8 @@ public class SwerveSubsystem extends SubsystemBase
     try
     {
       swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.MAX_SPEED,
-                                                                  new Pose2d(new Translation2d(Meter.of(1),
-                                                                                               Meter.of(4)),
+                                                                  new Pose2d(new Translation2d(Meter.of(15),
+                                                                                               Meter.of(1)),
                                                                              Rotation2d.fromDegrees(0)));
       // Alternative method if you don't want to supply the conversion factor via JSON files.
       // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed, angleConversionFactor, driveConversionFactor);
@@ -239,13 +240,20 @@ public class SwerveSubsystem extends SubsystemBase
         var result = resultO.get();
         if (result.hasTargets())
         {
-          drive(getTargetSpeeds(0,
-                                0,
-                                Rotation2d.fromDegrees(result.getBestTarget()
-                                                             .getYaw()))); // Not sure if this will work, more math may be required.
+          drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, result.getBestTarget().getYaw() * 0.055, getHeading()));
         }
       }
-    });
+    }); //.onlyWhile(() -> {
+    //   Optional<PhotonPipelineResult> resultO = camera.getBestResult();
+    //   if (resultO.isPresent()) {
+    //     var result = resultO.get();
+    //     System.out.println(result.hasTargets());
+    //     return result.hasTargets();
+    //   } else {
+    //     System.out.println(false);
+    //     return false;
+    //   }
+    // });
   }
 
   /**

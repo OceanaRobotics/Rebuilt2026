@@ -53,7 +53,7 @@ public class Vision
    * April Tag Field Layout of the year.
    */
   public static final AprilTagFieldLayout fieldLayout                     = AprilTagFieldLayout.loadField(
-      AprilTagFields.k2026RebuiltAndymark);
+      AprilTagFields.k2026RebuiltWelded);
   /**
    * Ambiguity defined as a value between (0,1). Used in {@link Vision#filterPose}.
    */
@@ -333,7 +333,7 @@ public class Vision
   /**
    * Camera Enum to select each camera
    */
-  enum Cameras
+  public enum Cameras
   {
     // /**
     //  * Left Camera
@@ -357,7 +357,7 @@ public class Vision
      * The camera name
      */
     limelight("limelight",
-               new Rotation3d(0, Units.degreesToRadians(-35), 0), // Roll is unknown, Pitch increases down, Yaw increases counter-clockwise
+               new Rotation3d(0, Units.degreesToRadians(35), 0), // Roll is unknown, Pitch increases down, Yaw increases counter-clockwise
                new Translation3d(Units.inchesToMeters(14.75), // X increases forwards
                                  Units.inchesToMeters(0.25), // Y increases leftwards
                                  Units.inchesToMeters(13)), // Z increases upwards
