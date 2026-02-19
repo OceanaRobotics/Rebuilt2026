@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.swervedrive.Hopper;
+import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -34,6 +36,8 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
+  public final Hopper hopper = new Hopper();
+  public final Shooter shooter = new Shooter();
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -158,6 +162,9 @@ public class RobotContainer
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
       driverXbox.a().whileTrue(drivebase.aimAtTarget(Cameras.limelight));
+      // driverXbox.b().onTrue(hopper.runSystem()).onFalse(hopper.stopSystem());
+      // driverXbox.rightBumper().onTrue(shooter.runShooterMotor(1)).onFalse(shooter.stopSystem());
+      driverXbox.y().onTrue(shooter.runShooterMotor(0.5)).onFalse(shooter.stopSystem());
     }
 
   }
