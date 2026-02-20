@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -36,7 +37,7 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
-  public final Hopper hopper = new Hopper();
+  // public final Hopper hopper = new Hopper();
   public final Shooter shooter = new Shooter();
 
   /**
@@ -163,8 +164,9 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
       driverXbox.a().whileTrue(drivebase.aimAtTarget(Cameras.limelight));
       // driverXbox.b().onTrue(hopper.runSystem()).onFalse(hopper.stopSystem());
-      // driverXbox.rightBumper().onTrue(shooter.runShooterMotor(1)).onFalse(shooter.stopSystem());
-      driverXbox.y().onTrue(shooter.runShooterMotor(0.5)).onFalse(shooter.stopSystem());
+      // driverXbox.y().onTrue(shooter.runShooterMotor()).onFalse(shooter.stopSystem());
+      // driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.b().onTrue(shooter.runAtVelocity()).onFalse(shooter.stopSystem());
     }
 
   }

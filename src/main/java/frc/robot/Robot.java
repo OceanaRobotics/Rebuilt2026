@@ -70,6 +70,13 @@ public class Robot extends TimedRobot
     {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
+    // SmartDashboard.putNumber("shooter power: ", 0.2);
+    // SmartDashboard.putNumber("shooter p: ", 0.000150);
+    // SmartDashboard.putNumber("shooter i: ", 0);
+    // SmartDashboard.putNumber("shooter d: ", 0);
+    // SmartDashboard.putNumber("shooter kS: ", 0);
+    // SmartDashboard.putNumber("shooter kV: ", 0.000175);
+    SmartDashboard.putNumber("desired rpm: ", 0);
   }
 
   /**
