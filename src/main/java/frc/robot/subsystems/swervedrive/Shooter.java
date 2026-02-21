@@ -46,7 +46,7 @@ public class Shooter extends SubsystemBase {
      * @param power The desired power percent to run the motor at
      * @return A {@link RunCommand}
      */
-    public Command runShooterMotor() {
+    public Command runSystemAtPercent() {
         return run(() -> {
             shooterMotor.set(SmartDashboard.getNumber("shooter power: ", 0.2));
         });
@@ -67,7 +67,7 @@ public class Shooter extends SubsystemBase {
      * @param rpm The desired RPM to run nthe motor at
      * @return A {@link RunCommand}
      */
-    public Command runAtVelocity() {
+    public Command runSystemAtVelocity() {
         return run(() -> {
             motorController.setSetpoint(SmartDashboard.getNumber("desired rpm: ", 0), ControlType.kVelocity);
         });

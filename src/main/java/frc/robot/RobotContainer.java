@@ -163,10 +163,8 @@ public class RobotContainer
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
       driverXbox.a().whileTrue(drivebase.aimAtTarget(Cameras.limelight));
-      // driverXbox.b().onTrue(hopper.runSystem()).onFalse(hopper.stopSystem());
-      // driverXbox.y().onTrue(shooter.runShooterMotor()).onFalse(shooter.stopSystem());
-      driverXbox.x().onTrue(shooter.reconfigureMotor());
-      driverXbox.b().onTrue(shooter.runAtVelocity()).onFalse(shooter.stopSystem());
+      // driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.b().onTrue(shooter.runSystemAtVelocity()).onFalse(shooter.stopSystem());
     }
 
   }
