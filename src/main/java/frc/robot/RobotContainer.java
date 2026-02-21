@@ -37,7 +37,6 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   public final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
-  // public final Hopper hopper = new Hopper();
   public final Shooter shooter = new Shooter();
 
   /**
@@ -165,6 +164,7 @@ public class RobotContainer
       driverXbox.a().whileTrue(drivebase.aimAtTarget(Cameras.limelight));
       // driverXbox.x().onTrue(shooter.reconfigureMotor());
       driverXbox.b().onTrue(shooter.runSystemAtVelocity()).onFalse(shooter.stopSystem());
+      driverXbox.y().onTrue(shooter.runShooterSystem()).onFalse(shooter.stopFullSystem());
     }
 
   }

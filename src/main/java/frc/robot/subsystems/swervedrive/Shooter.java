@@ -20,6 +20,7 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController motorController = shooterMotor.getClosedLoopController();
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
+    private Hopper m_hopper = new Hopper();
 
     public Shooter() {
         motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
@@ -53,7 +54,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * Stops the shooter motor
+     * Ends ONLY the shooter system, call {@link #stopFullSystem()} to end the hopper system
      * @return A {@link RunCommand}
      */
     public Command stopSystem() {
@@ -75,15 +76,22 @@ public class Shooter extends SubsystemBase {
 
     /**
      * !! UNFINISHED !!
+     * <li>!! UNTESTED !!</li>
      * Run the entire shooter system and attempt to score
      * @return A very fancy {@link RunCommand}
      */
     public Command runShooterSystem() {
         return run(() -> {
-            System.out.println("unga bunga");
+            m_hopper.runSystemAtVelocity(480, 1500)
+            .withTimeout(0.3)
+            .andThen(runSystemAtVelocity());
         });
     }
 
+    /**
+     * Reconfigures the shooter {@link SparkMax} based on {@link SmartDashboard} settings
+     * @return A {@link RunCommand}
+     */
     public Command reconfigureMotor() {
         return run(() -> {
             motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
@@ -99,6 +107,17 @@ public class Shooter extends SubsystemBase {
 
             shooterMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         }).withTimeout(0.1);
-    }  
+    } 
+
+    /**
+     * Ends BOTH the shooter and hopper systems
+     * @return A {@link RunCommand}
+     */
+    public Command stopFullSystem() {
+        return run(() -> {
+            stopSystem();
+            m_hopper.stopSystem();
+        });
+    }
 
 }
