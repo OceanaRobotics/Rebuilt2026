@@ -16,7 +16,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class Shooter extends SubsystemBase {
-    private SparkMax shooterMotor = new SparkMax(10, MotorType.kBrushless);
+    private SparkMax shooterMotor = new SparkMax(11, MotorType.kBrushless);
     private SparkClosedLoopController motorController = shooterMotor.getClosedLoopController();
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
