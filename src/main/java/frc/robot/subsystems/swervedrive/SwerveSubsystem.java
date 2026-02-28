@@ -242,17 +242,7 @@ public class SwerveSubsystem extends SubsystemBase
           drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, result.getBestTarget().getYaw() * 0.055, getHeading()));
         }
       }
-    }); //.onlyWhile(() -> {
-    //   Optional<PhotonPipelineResult> resultO = camera.getBestResult();
-    //   if (resultO.isPresent()) {
-    //     var result = resultO.get();
-    //     System.out.println(result.hasTargets());
-    //     return result.hasTargets();
-    //   } else {
-    //     System.out.println(false);
-    //     return false;
-    //   }
-    // });
+    });
   }
 
   /**
@@ -578,7 +568,7 @@ public class SwerveSubsystem extends SubsystemBase
    *
    * @return true if the red alliance, false if blue. Defaults to false if none is available.
    */
-  private boolean isRedAlliance()
+  public boolean isRedAlliance()
   {
     var alliance = DriverStation.getAlliance();
     return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;

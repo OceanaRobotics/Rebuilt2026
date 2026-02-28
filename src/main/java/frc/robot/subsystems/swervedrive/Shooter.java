@@ -1,9 +1,15 @@
 package frc.robot.subsystems.swervedrive;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.swervedrive.Vision.Cameras;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.PersistMode;
@@ -65,7 +71,7 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Run the shooter in velocity control mode
-     * @param rpm The desired RPM to run nthe motor at
+     * @param rpm The desired RPM to run the motor at
      * @return A {@link RunCommand}
      */
     public Command runSystemAtVelocity() {
@@ -119,5 +125,21 @@ public class Shooter extends SubsystemBase {
             m_hopper.stopSystem();
         });
     }
+
+    /**
+     * <li> !! UNTESTED !! </li>
+    * Aim the shooter at the hub
+    * @param camera The shooter camera
+    * @param dt The robot drivetrain
+    * @return A {@link RunCommand}
+    */
+    public Command aimAtHub(Cameras camera, SwerveSubsystem dt) {
+        return run(() -> {
+            Pose2d currentPose = dt.getPose();
+            Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+            Pose2d difference = currentPose.relativeTo(hubPose);
+            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, difference.getRotation().getDegrees(), dt.getHeading()));
+        });
+  }
 
 }
