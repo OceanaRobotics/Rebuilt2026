@@ -4,13 +4,17 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -18,12 +22,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.swervedrive.Hopper;
+import frc.robot.subsystems.swervedrive.Intake;
 import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
 import frc.robot.subsystems.swervedrive.Vision.Cameras;
-
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
  * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
@@ -38,6 +42,10 @@ public class RobotContainer
   public final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
   public final Shooter shooter = new Shooter();
+  public final Intake intake = new Intake();
+  public final Hopper hopper = new Hopper();
+  private SendableChooser<Command> autoChooser;
+
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -94,7 +102,29 @@ public class RobotContainer
    */
   public RobotContainer()
   {
+    //Shooter auto commands
+    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity());
+    NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem());
+    NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem());
+    NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(Cameras.limelight, drivebase));
     
+    //Intake auto commands
+    NamedCommands.registerCommand("extendIntake", intake.extendIntake());
+    NamedCommands.registerCommand("retractIntake", intake.retractIntake());
+    NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1));
+    NamedCommands.registerCommand("stopIntake", intake.stopSystem());
+
+    //Hopper auto commands
+    NamedCommands.registerCommand("runHopperAtVelocity", hopper.runSystemAtVelocity(1,1));
+    NamedCommands.registerCommand("reverseHopper", hopper.reverseSystem());
+
+    //auto choices
+    autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.addOption("BlueBasicLeft", new PathPlannerAuto("BlueBasicAuto"));
+    autoChooser.addOption("BlueBasicRight", new PathPlannerAuto("BlueBasicAuto" , true));
+    autoChooser.addOption("RedBasicRight", new PathPlannerAuto("RedBasicAuto"));
+    autoChooser.addOption("RedBasicLeft", new PathPlannerAuto("RedBasicAuto", true));
+
     // Configure the trigger bindings
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
