@@ -137,8 +137,9 @@ public class Shooter extends SubsystemBase {
         return run(() -> {
             Pose2d currentPose = dt.getPose();
             Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-            Pose2d difference = currentPose.relativeTo(hubPose);
-            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, difference.getRotation().getDegrees(), dt.getHeading()));
+            Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
+            Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
+            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, vector.getDegrees(), dt.getHeading()));
         });
   }
 
