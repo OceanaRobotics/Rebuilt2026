@@ -44,7 +44,7 @@ public class RobotContainer
   public final Shooter shooter = new Shooter();
   public final Intake intake = new Intake();
   public final Hopper hopper = new Hopper();
-  private SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> autoChooser;
 
 
   /**
@@ -124,6 +124,11 @@ public class RobotContainer
     autoChooser.addOption("BlueBasicRight", new PathPlannerAuto("BlueBasicAuto" , true));
     autoChooser.addOption("RedBasicRight", new PathPlannerAuto("RedBasicAuto"));
     autoChooser.addOption("RedBasicLeft", new PathPlannerAuto("RedBasicAuto", true));
+    autoChooser.addOption("RedCenterAuto", new PathPlannerAuto("RedCenterAuto"));
+    autoChooser.addOption("BlueCenterAuto", new PathPlannerAuto("BlueCenterAuto"));
+
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+
 
     // Configure the trigger bindings
     configureBindings();
@@ -207,7 +212,8 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+    //return drivebase.getAutonomousCommand("New Auto");
+    return autoChooser.getSelected();
   }
 
   public void setMotorBrake(boolean brake)
