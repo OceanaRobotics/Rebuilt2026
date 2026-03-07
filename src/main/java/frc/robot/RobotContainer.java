@@ -10,7 +10,6 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -42,8 +41,8 @@ public class RobotContainer
   public final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
   public final Shooter shooter = new Shooter();
-  public final Intake intake = new Intake();
-  public final Hopper hopper = new Hopper();
+  // public final Intake intake = new Intake();
+  // public final Hopper hopper = new Hopper();
   private final SendableChooser<Command> autoChooser;
 
 
@@ -109,14 +108,14 @@ public class RobotContainer
     NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(Cameras.limelight, drivebase));
     
     //Intake auto commands
-    NamedCommands.registerCommand("extendIntake", intake.extendIntake());
-    NamedCommands.registerCommand("retractIntake", intake.retractIntake());
-    NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1));
-    NamedCommands.registerCommand("stopIntake", intake.stopSystem());
+    // NamedCommands.registerCommand("extendIntake", intake.extendIntake());
+    // NamedCommands.registerCommand("retractIntake", intake.retractIntake());
+    // NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1));
+    // NamedCommands.registerCommand("stopIntake", intake.stopSystem());
 
     //Hopper auto commands
-    NamedCommands.registerCommand("runHopperAtVelocity", hopper.runSystemAtVelocity(1,1));
-    NamedCommands.registerCommand("reverseHopper", hopper.reverseSystem());
+    // NamedCommands.registerCommand("runHopperAtVelocity", hopper.runSystemAtVelocity(1,1));
+    // NamedCommands.registerCommand("reverseHopper", hopper.reverseSystem());
 
     //auto choices
     autoChooser = AutoBuilder.buildAutoChooser();
