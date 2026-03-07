@@ -4,22 +4,14 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
-import org.photonvision.PhotonUtils;
-import org.photonvision.targeting.PhotonPipelineResult;
-
 import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.swervedrive.Vision.Cameras;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.swervedrive.VisionNew;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,6 +30,7 @@ public class Robot extends TimedRobot
   private RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
+  private VisionNew visionNew;
 
   public Robot()
   {
@@ -61,6 +54,7 @@ public class Robot extends TimedRobot
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    visionNew = new VisionNew(m_robotContainer.drivebase.getSwerveDrive()::addVisionMeasurement);
 
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
@@ -95,30 +89,8 @@ public class Robot extends TimedRobot
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    SmartDashboard.putNumber("RYaw: ", m_robotContainer.drivebase.getHeading().getDegrees());
-    // SmartDashboard.putString("LL Pose: ", m_robotContainer.drivebase.vision.getAprilTagPose(1, new Transform2d(m_robotContainer.drivebase.getPose().getTranslation(), m_robotContainer.drivebase.getPose().getRotation())).toString());
-    Optional<PhotonPipelineResult> resultO = Cameras.limelight.getLatestResult();
-    if (resultO.isPresent()) {
-      var result = resultO.get();
-      if (result.hasTargets()) {
-        SmartDashboard.putNumber("D: ", PhotonUtils.calculateDistanceToTargetMeters(
-                                        Units.inchesToMeters(13), // Measured with a tape measure, or in CAD.
-                                        Units.inchesToMeters(44.25), // From 2024 game manual for ID 7
-                                        Units.degreesToRadians(30.0), // Measured with a protractor, or in CAD.
-                                        Units.degreesToRadians(result.getBestTarget().getPitch())));
-        double resultYaw = result.getBestTarget().getYaw();
-        SmartDashboard.putNumber("Yaw: ", resultYaw);
-        SmartDashboard.putNumber("Control: ", resultYaw);
-        SmartDashboard.putString("Speeds: ", m_robotContainer.drivebase.getRobotVelocity().toString());
-        try {      
-          SmartDashboard.putString("EstPose: ", m_robotContainer.drivebase.vision.getEstimatedGlobalPose(Cameras.limelight).get().estimatedPose.toString());
-          publisher.set(m_robotContainer.drivebase.getPose());
-        } catch(Exception e) {
-          System.out.println("No");
-        }
-      }
-      SmartDashboard.putNumber("T: ", result.getTargets().size());
-    }
+    visionNew.periodic();
+    SmartDashboard.putString("estPose: ", m_robotContainer.drivebase.getPose().toString());
   }
 
   /**
