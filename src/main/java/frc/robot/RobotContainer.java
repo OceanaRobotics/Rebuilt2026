@@ -119,10 +119,10 @@ public class RobotContainer
 
     //auto choices
     autoChooser = AutoBuilder.buildAutoChooser();
-    autoChooser.addOption("BlueBasicLeft", new PathPlannerAuto("BlueBasicAuto"));
-    autoChooser.addOption("BlueBasicRight", new PathPlannerAuto("BlueBasicAuto" , true));
-    autoChooser.addOption("RedBasicRight", new PathPlannerAuto("RedBasicAuto"));
-    autoChooser.addOption("RedBasicLeft", new PathPlannerAuto("RedBasicAuto", true));
+    autoChooser.addOption("BlueBasicLeftAuto", new PathPlannerAuto("BlueBasicAuto"));
+    autoChooser.addOption("BlueBasicRightAuto", new PathPlannerAuto("BlueBasicAuto" , true));
+    autoChooser.addOption("RedBasicRightAuto", new PathPlannerAuto("RedBasicAuto"));
+    autoChooser.addOption("RedBasicLeftAuto", new PathPlannerAuto("RedBasicAuto", true));
     autoChooser.addOption("RedCenterAuto", new PathPlannerAuto("RedCenterAuto"));
     autoChooser.addOption("BlueCenterAuto", new PathPlannerAuto("BlueCenterAuto"));
 
