@@ -141,6 +141,6 @@ public class Shooter extends SubsystemBase {
             Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
             dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, vector.getDegrees(), dt.getHeading()));
         });
-  }
+    }
 
 }
