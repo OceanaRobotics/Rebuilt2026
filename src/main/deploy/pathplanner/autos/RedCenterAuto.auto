@@ -56,6 +56,18 @@
                 "data": {
                   "pathName": "Red Off Wall Pickup"
                 }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Red Off Wall Pickup Return"
+                }
               }
             ]
           }
