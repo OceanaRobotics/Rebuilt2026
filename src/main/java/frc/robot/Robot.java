@@ -91,6 +91,7 @@ public class Robot extends TimedRobot
     CommandScheduler.getInstance().run();
     visionNew.periodic();
     SmartDashboard.putString("estPose: ", m_robotContainer.drivebase.getPose().toString());
+    publisher.set(m_robotContainer.drivebase.getPose());
   }
 
   /**
