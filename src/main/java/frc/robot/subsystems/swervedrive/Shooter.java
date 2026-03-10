@@ -2,6 +2,7 @@ package frc.robot.subsystems.swervedrive;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
@@ -26,8 +27,12 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController motorController = shooterMotor.getClosedLoopController();
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
-    private Hopper m_hopper = new Hopper();
+    public Hopper m_hopper = new Hopper();
+    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(0), Units.inchesToMeters(0), new Rotation2d(0));
 
+    /**
+     * A subsystem handling the entire shooting pipeline, including hopper and intake
+     */
     public Shooter() {
         motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
         motorConfig.closedLoop
@@ -96,6 +101,7 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Reconfigures the shooter {@link SparkMax} based on {@link SmartDashboard} settings
+     * <li> !! DO NOT CALL OUTSIDE OF TESTING !! </li>
      * @return A {@link RunCommand}
      */
     public Command reconfigureMotor() {
@@ -127,20 +133,35 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
-     * <li> !! UNTESTED !! </li>
     * Aim the shooter at the hub
     * @param camera The shooter camera
     * @param dt The robot drivetrain
     * @return A {@link RunCommand}
     */
-    public Command aimAtHub(Cameras camera, SwerveSubsystem dt) {
+    public Command aimAtHub(SwerveSubsystem dt) {
         return run(() -> {
-            Pose2d currentPose = dt.getPose();
+            Pose2d currentPose = getShooterPose(dt);
             Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
             Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
             Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
-            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, vector.getDegrees(), dt.getHeading()));
-        });
+            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (dt.getPose().getRotation().getDegrees() - vector.getDegrees()) * 0.055, dt.getHeading()));
+        }).withTimeout(1);
+    }
+
+    /**
+     * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
+     * @param dt The robot drivetrain
+     * @return {@link Double} Distance
+     */
+    public double getDistanceToHub(SwerveSubsystem dt) {
+        Pose2d currentPose = getShooterPose(dt);
+        Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+        Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
+        return difference.getNorm();
+    }
+
+    public Pose2d getShooterPose(SwerveSubsystem dt) {
+        return dt.getPose().plus(shooterOffset);
     }
 
 }
