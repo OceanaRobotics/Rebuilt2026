@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
     private SparkClosedLoopController motorController = shooterMotor.getClosedLoopController();
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
-    private Hopper m_hopper = new Hopper();
+    public Hopper m_hopper = new Hopper();
     public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(0), Units.inchesToMeters(0), new Rotation2d(0));
 
     /**
@@ -138,14 +138,14 @@ public class Shooter extends SubsystemBase {
     * @param dt The robot drivetrain
     * @return A {@link RunCommand}
     */
-    public Command aimAtHub(Cameras camera, SwerveSubsystem dt) {
+    public Command aimAtHub(SwerveSubsystem dt) {
         return run(() -> {
             Pose2d currentPose = getShooterPose(dt);
             Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
             Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
             Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
-            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, vector.getDegrees(), dt.getHeading()));
-        });
+            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (dt.getPose().getRotation().getDegrees() - vector.getDegrees()) * 0.055, dt.getHeading()));
+        }).withTimeout(1);
     }
 
     /**
