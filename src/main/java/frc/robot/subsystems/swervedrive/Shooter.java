@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase {
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
     public Hopper m_hopper = new Hopper();
-    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(0), Units.inchesToMeters(0), new Rotation2d(0));
+    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(0));
 
     /**
      * A subsystem handling the entire shooting pipeline, including hopper and intake
