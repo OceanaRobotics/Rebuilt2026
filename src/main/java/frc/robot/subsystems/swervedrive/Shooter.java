@@ -29,138 +29,140 @@ public class Shooter extends SubsystemBase {
     public Hopper m_hopper = new Hopper();
     public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(0));
 
-    /**
-     * A subsystem handling the entire shooting pipeline, including hopper and intake
-     */
-    public Shooter() {
-        motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
-        motorConfig.closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .p(0.000150)
-            .i(0)
-            .d(0)
-            .outputRange(0, 1)
-            .feedForward.kV(0.000150, ClosedLoopSlot.kSlot0);
+  /**
+   * A subsystem handling the entire shooting pipeline, including hopper and intake
+   */
+  public Shooter() {
+    motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
+    motorConfig.closedLoop
+      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+      .p(0.000150)
+      .i(0)
+      .d(0)
+      .outputRange(0, 1)
+      .feedForward.kV(0.000150, ClosedLoopSlot.kSlot0);
+    shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
 
-        shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    }
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("shooter rpm: ", motorEncoder.getVelocity());
+    SmartDashboard.putNumber("shooter set: ", shooterMotor.get());
+    SmartDashboard.putNumber("shooter setpoint: ", motorController.getSetpoint());
+  }
 
-    @Override
-    public void periodic() {
-        SmartDashboard.putNumber("shooter rpm: ", motorEncoder.getVelocity());
-        SmartDashboard.putNumber("shooter set: ", shooterMotor.get());
-        SmartDashboard.putNumber("shooter setpoint: ", motorController.getSetpoint());
-    }
+  /**
+   * Run the shooter motor at a percent power
+   * @param power The desired power percent to run the motor at
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command runSystemAtPercent() {
+    return run(() -> {
+      shooterMotor.set(SmartDashboard.getNumber("shooter power: ", 0.2));
+    });
+  }
 
-    /**
-     * Run the shooter motor at a percent power
-     * @param power The desired power percent to run the motor at
-     * @return A {@link RunCommand}
-     */
-    public Command runSystemAtPercent() {
-        return run(() -> {
-            shooterMotor.set(SmartDashboard.getNumber("shooter power: ", 0.2));
-        });
-    }
+  /**
+   * Ends ONLY the shooter system, call {@link #stopFullSystem()} to end the hopper system
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command stopSystem() {
+    return run(() -> {
+      shooterMotor.set(0);
+    });
+  }
 
-    /**
-     * Ends ONLY the shooter system, call {@link #stopFullSystem()} to end the hopper system
-     * @return A {@link RunCommand}
-     */
-    public Command stopSystem() {
-        return run(() -> {
-            shooterMotor.set(0);
-        });
-    }
+  /**
+   * Run the shooter in velocity control mode
+   * @param rpm The desired RPM to run the motor at
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command runSystemAtVelocity() {
+    return run(() -> {
+      motorController.setSetpoint(SmartDashboard.getNumber("desired rpm: ", 0), ControlType.kVelocity);
+    });
+  }
 
-    /**
-     * Run the shooter in velocity control mode
-     * @param rpm The desired RPM to run the motor at
-     * @return A {@link RunCommand}
-     */
-    public Command runSystemAtVelocity() {
-        return run(() -> {
-            motorController.setSetpoint(SmartDashboard.getNumber("desired rpm: ", 0), ControlType.kVelocity);
-        });
-    }
+  /**
+   * !! UNFINISHED !!
+   * <li>!! UNTESTED !!</li>
+   * Run the entire shooter system and attempt to score
+   * @return {@link RunCommand} - Very fancy command to run
+   */
+  public Command runShooterSystem() {
+    return run(() -> {
+      m_hopper.runSystemAtVelocity(480, 1500)
+      .withTimeout(0.3)
+      .andThen(runSystemAtVelocity());
+    });
+  }
 
-    /**
-     * !! UNFINISHED !!
-     * <li>!! UNTESTED !!</li>
-     * Run the entire shooter system and attempt to score
-     * @return A very fancy {@link RunCommand}
-     */
-    public Command runShooterSystem() {
-        return run(() -> {
-            m_hopper.runSystemAtVelocity(480, 1500)
-            .withTimeout(0.3)
-            .andThen(runSystemAtVelocity());
-        });
-    }
+  /**
+   * Reconfigures the shooter {@link SparkMax} based on {@link SmartDashboard} settings
+   * <li> !! DO NOT CALL OUTSIDE OF TESTING !! </li>
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command reconfigureMotor() {
+    return run(() -> {
+      motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
+      motorConfig.closedLoop
+          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+          .p(SmartDashboard.getNumber("shooter p: ", 0.000150))
+          .i(SmartDashboard.getNumber("shooter i: ", 0))
+          .d(SmartDashboard.getNumber("shooter d: ", 0))
+          .outputRange(0, 1)
+        .feedForward
+          // .kS(SmartDashboard.getNumber("shooter kS: ", 0), ClosedLoopSlot.kSlot0);
+          .kV(SmartDashboard.getNumber("shooter kV: ", 0.000150), ClosedLoopSlot.kSlot0);
+      shooterMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    }).withTimeout(0.1);
+  } 
 
-    /**
-     * Reconfigures the shooter {@link SparkMax} based on {@link SmartDashboard} settings
-     * <li> !! DO NOT CALL OUTSIDE OF TESTING !! </li>
-     * @return A {@link RunCommand}
-     */
-    public Command reconfigureMotor() {
-        return run(() -> {
-            motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
-            motorConfig.closedLoop
-                    .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                    .p(SmartDashboard.getNumber("shooter p: ", 0.000150))
-                    .i(SmartDashboard.getNumber("shooter i: ", 0))
-                    .d(SmartDashboard.getNumber("shooter d: ", 0))
-                    .outputRange(0, 1)
-                .feedForward
-                    // .kS(SmartDashboard.getNumber("shooter kS: ", 0), ClosedLoopSlot.kSlot0);
-                    .kV(SmartDashboard.getNumber("shooter kV: ", 0.000150), ClosedLoopSlot.kSlot0);
+  /**
+   * Ends BOTH the shooter and hopper systems
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command stopFullSystem() {
+    return run(() -> {
+      stopSystem();
+      m_hopper.stopSystem();
+    });
+  }
 
-            shooterMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        }).withTimeout(0.1);
-    } 
+  /**
+  * Aim the shooter at the hub
+  * @param dt - The robot drivetrain
+  * @return {@link RunCommand} - Command to run
+  */
+  public Command aimAtHub(SwerveSubsystem dt) {
+    return run(() -> {
+      Pose2d currentPose = getShooterPose(dt);
+      Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+      Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
+      Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
+      dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (dt.getPose().getRotation().getDegrees() - vector.getDegrees()) * 0.055, dt.getHeading()));
+    }).withTimeout(1);
+  }
 
-    /**
-     * Ends BOTH the shooter and hopper systems
-     * @return A {@link RunCommand}
-     */
-    public Command stopFullSystem() {
-        return run(() -> {
-            stopSystem();
-            m_hopper.stopSystem();
-        });
-    }
+  /**
+   * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
+   * @param dt - The robot drivetrain
+   * @return {@link Double} - Distance
+   */
+  public double getDistanceToHub(SwerveSubsystem dt) {
+    Pose2d currentPose = getShooterPose(dt);
+    Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+    Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
+    return difference.getNorm();
+  }
 
-    /**
-    * Aim the shooter at the hub
-    * @param camera The shooter camera
-    * @param dt The robot drivetrain
-    * @return A {@link RunCommand}
-    */
-    public Command aimAtHub(SwerveSubsystem dt) {
-        return run(() -> {
-            Pose2d currentPose = getShooterPose(dt);
-            Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-            Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
-            Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
-            dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (dt.getPose().getRotation().getDegrees() - vector.getDegrees()) * 0.055, dt.getHeading()));
-        }).withTimeout(1);
-    }
-
-    /**
-     * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
-     * @param dt The robot drivetrain
-     * @return {@link Double} Distance
-     */
-    public double getDistanceToHub(SwerveSubsystem dt) {
-        Pose2d currentPose = getShooterPose(dt);
-        Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-        Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
-        return difference.getNorm();
-    }
-
-    public Pose2d getShooterPose(SwerveSubsystem dt) {
-        return dt.getPose().plus(shooterOffset);
-    }
+  /**
+   * Get the pose of the shooter on the field, rather than the center of the robot
+   * @param dt - The robot drivetrain
+   * @return {@link Pose2d} - The shooter pose
+   */
+  public Pose2d getShooterPose(SwerveSubsystem dt) {
+    return dt.getPose().plus(shooterOffset);
+  }
 
 }
