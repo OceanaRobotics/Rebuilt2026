@@ -5,15 +5,87 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "aimAtHub"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "extendIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterSystem"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopFullSystem"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runIntakeAtVelocity"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red Basic Pickup"
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Red Basic Return"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "aimAtHub"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runShooterSystem"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopFullSystem"
           }
         }
       ]

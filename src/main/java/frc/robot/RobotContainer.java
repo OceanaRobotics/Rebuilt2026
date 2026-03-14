@@ -83,15 +83,15 @@ public class RobotContainer
   {
     // Shooter auto commands
     NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity(2)); // !! ADJUST THIS !!
-    NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase));
-    NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem());
+    NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase)); //need this
+    NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem()); //need this
     NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(drivebase));
     
     // Intake auto commands
-    NamedCommands.registerCommand("extendIntake", intake.extendIntake());
-    NamedCommands.registerCommand("retractIntake", intake.retractIntake());
-    NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1));
-    NamedCommands.registerCommand("stopIntake", intake.stopSystem());
+    NamedCommands.registerCommand("extendIntake", intake.extendIntake()); //need this
+    NamedCommands.registerCommand("retractIntake", intake.retractIntake()); //need this
+    NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1)); //need this
+    NamedCommands.registerCommand("stopIntake", intake.stopSystem()); //need this
 
     // Hopper auto commands
     NamedCommands.registerCommand("runHopperAtVelocity", hopper.runSystemAtVelocity(1,1));
