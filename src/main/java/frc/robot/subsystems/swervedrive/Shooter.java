@@ -48,8 +48,6 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("shooter rpm: ", motorEncoder.getVelocity());
-    SmartDashboard.putNumber("shooter set: ", shooterMotor.get());
-    SmartDashboard.putNumber("shooter setpoint: ", motorController.getSetpoint());
   }
 
   /**
@@ -113,7 +111,6 @@ public class Shooter extends SubsystemBase {
           .d(SmartDashboard.getNumber("shooter d: ", 0))
           .outputRange(0, 1)
         .feedForward
-          // .kS(SmartDashboard.getNumber("shooter kS: ", 0), ClosedLoopSlot.kSlot0);
           .kV(SmartDashboard.getNumber("shooter kV: ", 0.000150), ClosedLoopSlot.kSlot0);
       shooterMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }).withTimeout(0.1);

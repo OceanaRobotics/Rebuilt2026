@@ -60,13 +60,19 @@ public class Robot extends TimedRobot {
     {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
-    // SmartDashboard.putNumber("shooter power: ", 0.2);
-    // SmartDashboard.putNumber("shooter p: ", 0.000150);
-    // SmartDashboard.putNumber("shooter i: ", 0);
-    // SmartDashboard.putNumber("shooter d: ", 0);
-    // SmartDashboard.putNumber("shooter kS: ", 0);
-    // SmartDashboard.putNumber("shooter kV: ", 0.000175);
-    SmartDashboard.putNumber("desired rpm: ", 0);
+    SmartDashboard.putNumber("shooter p: ", 0.000150);
+    SmartDashboard.putNumber("shooter i: ", 0.0);
+    SmartDashboard.putNumber("shooter d: ", 0.0);
+    SmartDashboard.putNumber("shooter kV: ", 0.000150);
+    SmartDashboard.putNumber("shooter desired rpm: ", 0.0);
+    SmartDashboard.putNumber("hopper p: ", 0.0);
+    SmartDashboard.putNumber("hopper i: ", 0.0);
+    SmartDashboard.putNumber("hopper d: ", 0.0);
+    SmartDashboard.putNumber("hopper kV: ", 0.0);
+    SmartDashboard.putNumber("kicker p: ", 0.0);
+    SmartDashboard.putNumber("kicker i: ", 0.0);
+    SmartDashboard.putNumber("kicker d: ", 0.0);
+    SmartDashboard.putNumber("kicker kV: ", 0.0);
   }
 
   /**
@@ -85,7 +91,7 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     visionNew.periodic();
-    SmartDashboard.putString("estPose: ", m_robotContainer.drivebase.getPose().toString());
+    SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToHub(m_robotContainer.drivebase));
     publisher.set(m_robotContainer.drivebase.getPose());
   }
 
