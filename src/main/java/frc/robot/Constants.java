@@ -52,7 +52,7 @@ public final class Constants {
   public static final class Vision {
     public static final String kCameraName = "limelight";
     // Cam mount positions from center (forward, left, up)
-    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(14.75), Units.inchesToMeters(0.25), Units.inchesToMeters(14)), new Rotation3d(0, 35, 90));
+    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-10.6), Units.inchesToMeters(9.7), Units.inchesToMeters(14.1)), new Rotation3d(0, 25, 90));
     // The layout of the AprilTags on the field
     public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     // The standard deviations of our vision estimated poses, which affect correction rate

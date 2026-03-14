@@ -103,4 +103,27 @@ public class Hopper extends SubsystemBase {
     });
   }
 
+  public Command reconfigureMotors() {
+    return run(() -> {
+      agitatorConfig.closedLoop
+          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+          .p(SmartDashboard.getNumber("hopper p: ", 0))
+          .i(SmartDashboard.getNumber("hopper i: ", 0))
+          .d(SmartDashboard.getNumber("hopper d: ", 0))
+          .outputRange(0, 1)
+        .feedForward
+          .kV(SmartDashboard.getNumber("hopper kV: ", 0), ClosedLoopSlot.kSlot0);
+      agitatorMotor.configure(agitatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      kickerConfig.closedLoop
+          .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+          .p(SmartDashboard.getNumber("kicker p: ", 0))
+          .i(SmartDashboard.getNumber("kicker i: ", 0))
+          .d(SmartDashboard.getNumber("kicker d: ", 0))
+          .outputRange(0, 1)
+        .feedForward
+          .kV(SmartDashboard.getNumber("kicker kV: ", 0), ClosedLoopSlot.kSlot0);
+      kickerMotor.configure(kickerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    });
+  }
+
 }

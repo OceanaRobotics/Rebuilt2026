@@ -150,10 +150,10 @@ public class RobotContainer
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
-      // driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.x().onTrue(shooter.reconfigureMotor());
       driverXbox.b().onTrue(shooter.runSystemAtVelocity(SmartDashboard.getNumber("desired rpm: ", 0))).onFalse(shooter.stopSystem());
-      // driverXbox.y().onTrue(shooter.runShooterSystem()).onFalse(shooter.stopFullSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
+      driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
     }
 
   }
