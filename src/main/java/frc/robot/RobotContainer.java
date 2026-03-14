@@ -82,8 +82,8 @@ public class RobotContainer
   public RobotContainer()
   {
     // Shooter auto commands
-    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity());
-    NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem());
+    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity(2)); // !! ADJUST THIS !!
+    NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase));
     NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem());
     NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(drivebase));
     
@@ -151,7 +151,7 @@ public class RobotContainer
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.rightBumper().onTrue(Commands.none());
       // driverXbox.x().onTrue(shooter.reconfigureMotor());
-      // driverXbox.b().onTrue(shooter.runSystemAtVelocity()).onFalse(shooter.stopSystem());
+      driverXbox.b().onTrue(shooter.runSystemAtVelocity(SmartDashboard.getNumber("desired rpm: ", 0))).onFalse(shooter.stopSystem());
       // driverXbox.y().onTrue(shooter.runShooterSystem()).onFalse(shooter.stopFullSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
     }

@@ -78,9 +78,9 @@ public class Shooter extends SubsystemBase {
    * @param rpm The desired RPM to run the motor at
    * @return {@link RunCommand} - Command to run
    */
-  public Command runSystemAtVelocity() {
+  public Command runSystemAtVelocity(double velocity) {
     return run(() -> {
-      motorController.setSetpoint(SmartDashboard.getNumber("desired rpm: ", 0), ControlType.kVelocity);
+      motorController.setSetpoint(velocity, ControlType.kVelocity);
     });
   }
 
@@ -90,10 +90,10 @@ public class Shooter extends SubsystemBase {
    * Run the entire shooter system and attempt to score
    * @return {@link RunCommand} - Very fancy command to run
    */
-  public Command runShooterSystem() {
+  public Command runShooterSystem(SwerveSubsystem dt) {
     return run(() -> { // This RunCommand starts the shooting pipeline
-      this.runSystemAtVelocity();
-      this.waitDuration(1);
+      this.runSystemAtVelocity(this.getOptimalShooterVelocity(dt));
+      this.aimAtHub(dt);
       m_hopper.runSystemAtVelocity(480, 500);
     });
   }
@@ -148,7 +148,7 @@ public class Shooter extends SubsystemBase {
   /**
    * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
    * @param dt - The robot drivetrain
-   * @return {@link Double} - Distance
+   * @return {@link Double} - Distance to the hub
    */
   public double getDistanceToHub(SwerveSubsystem dt) {
     Pose2d currentPose = getShooterPose(dt);
@@ -160,7 +160,7 @@ public class Shooter extends SubsystemBase {
   /**
    * Get the pose of the shooter on the field, rather than the center of the robot
    * @param dt - The robot drivetrain
-   * @return {@link Pose2d} - The shooter pose
+   * @return {@link Pose2d} - The shooter pose relative to the field
    */
   public Pose2d getShooterPose(SwerveSubsystem dt) {
     return dt.getPose().plus(shooterOffset);
@@ -173,6 +173,18 @@ public class Shooter extends SubsystemBase {
    */
   public Command waitDuration(double duration) {
     return new WaitCommand(duration);
+  }
+
+  /**
+   * Compute the optimal velocity for the shooter at the current distance to score
+   * <li> !! PROPER SHOOTER EQUATION NOT INPUT !! </li>
+   * @param dt - The robot drivetrain
+   * @return {@link Double} - RPM
+   */
+  public double getOptimalShooterVelocity(SwerveSubsystem dt) {
+    double distance = this.getDistanceToHub(dt);
+    double rpm = distance * 750; // Replace with magical shooter equation
+    return rpm;
   }
 
 }
