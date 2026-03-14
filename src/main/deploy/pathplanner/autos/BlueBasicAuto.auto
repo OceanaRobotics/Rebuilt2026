@@ -7,12 +7,6 @@
         {
           "type": "named",
           "data": {
-            "name": "aimAtHub"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "extendIntake"
           }
         },
@@ -62,12 +56,6 @@
           "type": "path",
           "data": {
             "pathName": "Blue Basic Return"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "aimAtHub"
           }
         },
         {
