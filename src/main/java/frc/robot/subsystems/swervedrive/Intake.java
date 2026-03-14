@@ -79,7 +79,7 @@ public class Intake extends SubsystemBase {
   public Command extendIntake() {
     return run(() -> {
      intakeMover.set(0.5);
-    }).withTimeout(1).andThen(stopSystem());
+    }).withTimeout(0.1).andThen(stopSystem());
   }
 
   /**
@@ -89,7 +89,7 @@ public class Intake extends SubsystemBase {
   public Command retractIntake() {
     return run(() -> {
       intakeMover.set(-0.5);
-    }).withTimeout(1).andThen(stopSystem());
+    }).withTimeout(0.1).andThen(stopSystem());
   }
 
 }
