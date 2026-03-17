@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.subsystems.swervedrive.Hopper;
 import frc.robot.subsystems.swervedrive.Intake;
 import frc.robot.subsystems.swervedrive.Shooter;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
@@ -39,15 +38,14 @@ public class RobotContainer
   public final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
   public final Shooter shooter = new Shooter();
   public final Intake intake = new Intake();
-  public final Hopper hopper = shooter.m_hopper;
   public final SendableChooser<Command> autoChooser;
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                                                                () -> driverXbox.getLeftY() * -1,
-                                                                () -> driverXbox.getLeftX() * -1)
+                                                                () -> driverXbox.getLeftY() * 1,
+                                                                () -> driverXbox.getLeftX() * 1)
                                                             .withControllerRotationAxis(driverXbox::getRightX)
                                                             .deadband(OperatorConstants.DEADBAND)
                                                             .scaleTranslation(0.8)
@@ -82,7 +80,7 @@ public class RobotContainer
   public RobotContainer()
   {
     // Shooter auto commands
-    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity(2)); // !! ADJUST THIS !!
+    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity()); // !! ADJUST THIS !!
     NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase)); //need this
     NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem()); //need this
     NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(drivebase));
@@ -94,8 +92,8 @@ public class RobotContainer
     NamedCommands.registerCommand("stopIntake", intake.stopSystem()); //need this
 
     // Hopper auto commands
-    NamedCommands.registerCommand("runHopperAtVelocity", hopper.runSystemAtVelocity(1,1));
-    NamedCommands.registerCommand("reverseHopper", hopper.reverseSystem());
+    NamedCommands.registerCommand("runHopperAtVelocity", shooter.m_hopper.runSystemAtVelocity(1,1));
+    NamedCommands.registerCommand("reverseHopper", shooter.m_hopper.reverseSystem());
 
     // Add the choices to autoChooser
     autoChooser = AutoBuilder.buildAutoChooser();
@@ -147,13 +145,14 @@ public class RobotContainer
       // Teleop controls
 
       driverXbox.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
-      driverXbox.back().whileTrue(Commands.none());
-      driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.rightBumper().onTrue(Commands.none());
-      driverXbox.x().onTrue(shooter.reconfigureMotor());
-      driverXbox.b().onTrue(shooter.runSystemAtVelocity(SmartDashboard.getNumber("desired rpm: ", 0))).onFalse(shooter.stopSystem());
+      // driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.b().onTrue(shooter.runSystemAtVelocity()).onFalse(shooter.stopSystem());
+      driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.60)).onFalse(intake.stopSystem());
+      driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.25, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
       driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
+      driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
+      driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());
     }
 
   }

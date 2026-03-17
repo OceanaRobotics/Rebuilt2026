@@ -28,7 +28,7 @@ public class Shooter extends SubsystemBase {
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
     public Hopper m_hopper = new Hopper();
-    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(0));
+    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(90)));
 
   /**
    * A subsystem handling the entire shooting pipeline, including hopper and intake
@@ -76,9 +76,9 @@ public class Shooter extends SubsystemBase {
    * @param rpm The desired RPM to run the motor at
    * @return {@link RunCommand} - Command to run
    */
-  public Command runSystemAtVelocity(double velocity) {
+  public Command runSystemAtVelocity() {
     return run(() -> {
-      motorController.setSetpoint(velocity, ControlType.kVelocity);
+      motorController.setSetpoint(SmartDashboard.getNumber("shooter desired rpm: ", 0.0), ControlType.kVelocity);
     });
   }
 
@@ -90,7 +90,7 @@ public class Shooter extends SubsystemBase {
    */
   public Command runShooterSystem(SwerveSubsystem dt) {
     return run(() -> { // This RunCommand starts the shooting pipeline
-      this.runSystemAtVelocity(this.getOptimalShooterVelocity(dt));
+      this.runSystemAtVelocity();
       this.aimAtHub(dt);
       m_hopper.runSystemAtVelocity(480, 500);
     });
@@ -134,12 +134,12 @@ public class Shooter extends SubsystemBase {
   */
   public Command aimAtHub(SwerveSubsystem dt) {
     return run(() -> {
-      Pose2d currentPose = getShooterPose(dt);
+      Pose2d currentPose = dt.getPose();
       Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
       Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
       Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
-      dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (dt.getPose().getRotation().getDegrees() - vector.getDegrees()) * 0.055, dt.getHeading()));
-    }).withTimeout(1);
+      dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+    }).withTimeout(10);
   }
 
   /**
@@ -148,7 +148,7 @@ public class Shooter extends SubsystemBase {
    * @return {@link Double} - Distance to the hub
    */
   public double getDistanceToHub(SwerveSubsystem dt) {
-    Pose2d currentPose = getShooterPose(dt);
+    Pose2d currentPose = dt.getPose();
     Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
     Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
     return difference.getNorm();

@@ -36,6 +36,7 @@ public class Hopper extends SubsystemBase {
         .outputRange(0, 1)
       .feedForward
         .kV(0, ClosedLoopSlot.kSlot0);
+    agitatorConfig.inverted(true);
     agitatorMotor.configure(agitatorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     kickerConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
     kickerConfig.closedLoop
@@ -46,6 +47,7 @@ public class Hopper extends SubsystemBase {
         .outputRange(0, 1)
       .feedForward
         .kV(0, ClosedLoopSlot.kSlot0);
+    kickerConfig.inverted(true);
     kickerMotor.configure(kickerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 

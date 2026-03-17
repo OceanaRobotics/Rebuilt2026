@@ -92,6 +92,8 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     visionNew.periodic();
     SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToHub(m_robotContainer.drivebase));
+    SmartDashboard.putNumber("gyro angle: ", m_robotContainer.drivebase.getHeading().getDegrees());
+    SmartDashboard.putString("stdDevs", visionNew.getEstimationStdDevs().toString());
     publisher.set(m_robotContainer.drivebase.getPose());
   }
 

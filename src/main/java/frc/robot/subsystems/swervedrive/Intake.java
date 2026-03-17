@@ -31,6 +31,7 @@ public class Intake extends SubsystemBase {
       .d(0)
       .outputRange(0, 1)
       .feedForward.kV(0, ClosedLoopSlot.kSlot0);
+    intakeConfig.inverted(true);
     intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
@@ -78,7 +79,7 @@ public class Intake extends SubsystemBase {
    */
   public Command extendIntake() {
     return run(() -> {
-     intakeMover.set(0.5);
+     intakeMover.set(0.15);
     }).withTimeout(0.1).andThen(stopSystem());
   }
 
@@ -88,8 +89,8 @@ public class Intake extends SubsystemBase {
    */
   public Command retractIntake() {
     return run(() -> {
-      intakeMover.set(-0.5);
-    }).withTimeout(0.1).andThen(stopSystem());
+      intakeMover.set(-0.75);
+    }).withTimeout(0.5).andThen(run(() -> {intakeMover.set(0.05);}));
   }
 
 }

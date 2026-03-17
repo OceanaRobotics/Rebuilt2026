@@ -43,18 +43,18 @@ public final class Constants {
 
   public static class OperatorConstants {
     // Joystick Deadband
-    public static final double DEADBAND = 0.1;
-    public static final double LEFT_Y_DEADBAND = 0.1;
-    public static final double RIGHT_X_DEADBAND = 0.1;
+    public static final double DEADBAND = 0.075;
+    public static final double LEFT_Y_DEADBAND = 0.075;
+    public static final double RIGHT_X_DEADBAND = 0.075;
     public static final double TURN_CONSTANT = 6;
   }
 
   public static final class Vision {
     public static final String kCameraName = "limelight";
     // Cam mount positions from center (forward, left, up)
-    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-10.6), Units.inchesToMeters(9.7), Units.inchesToMeters(14.1)), new Rotation3d(0, 25, 90));
+    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-10.6), Units.inchesToMeters(9.7), Units.inchesToMeters(14.1)), new Rotation3d(0, Units.degreesToRadians(25), Units.degreesToRadians(90)));
     // The layout of the AprilTags on the field
-    public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     // The standard deviations of our vision estimated poses, which affect correction rate
     // (Fake values. Experiment and determine estimation noise on an actual robot.)
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
