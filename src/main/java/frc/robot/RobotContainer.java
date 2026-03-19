@@ -80,7 +80,7 @@ public class RobotContainer
   public RobotContainer()
   {
     // Shooter auto commands
-    NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity()); // !! ADJUST THIS !!
+    // NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity()); // !! ADJUST THIS !!
     NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase)); //need this
     NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem()); //need this
     NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(drivebase));
@@ -92,7 +92,7 @@ public class RobotContainer
     NamedCommands.registerCommand("stopIntake", intake.stopSystem()); //need this
 
     // Hopper auto commands
-    NamedCommands.registerCommand("runHopperAtVelocity", shooter.m_hopper.runSystemAtVelocity(1,1));
+    NamedCommands.registerCommand("runHopperAtVelocity", shooter.m_hopper.runSystemAtVelocity());
     NamedCommands.registerCommand("reverseHopper", shooter.m_hopper.reverseSystem());
 
     // Add the choices to autoChooser
@@ -145,12 +145,12 @@ public class RobotContainer
       // Teleop controls
 
       driverXbox.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
-      // driverXbox.x().onTrue(shooter.reconfigureMotor());
-      driverXbox.b().onTrue(shooter.runSystemAtVelocity()).onFalse(shooter.stopSystem());
+      driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.b().onTrue(shooter.runSystemAtVelocity(drivebase)).onFalse(shooter.stopSystem());
+      driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.5, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.60)).onFalse(intake.stopSystem());
-      driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.25, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
-      driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
+      driverXbox.y().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
       driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
       driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());
     }

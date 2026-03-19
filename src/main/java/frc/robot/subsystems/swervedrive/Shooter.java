@@ -37,11 +37,11 @@ public class Shooter extends SubsystemBase {
     motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
     motorConfig.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .p(0.000150)
+      .p(0.0002)
       .i(0)
-      .d(0)
+      .d(0.005)
       .outputRange(0, 1)
-      .feedForward.kV(0.000150, ClosedLoopSlot.kSlot0);
+      .feedForward.kV(0.0001875, ClosedLoopSlot.kSlot0);
     shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
@@ -76,24 +76,23 @@ public class Shooter extends SubsystemBase {
    * @param rpm The desired RPM to run the motor at
    * @return {@link RunCommand} - Command to run
    */
-  public Command runSystemAtVelocity() {
+  public Command runSystemAtVelocity(SwerveSubsystem drivebase) {
     return run(() -> {
-      motorController.setSetpoint(SmartDashboard.getNumber("shooter desired rpm: ", 0.0), ControlType.kVelocity);
+      motorController.setSetpoint(this.getOptimalShooterVelocity(drivebase), ControlType.kVelocity);
     });
   }
 
   /**
-   * !! UNFINISHED !!
-   * <li>!! UNTESTED !!</li>
    * Run the entire shooter system and attempt to score
+   * @param dt - The robot drivetrain
    * @return {@link RunCommand} - Very fancy command to run
    */
   public Command runShooterSystem(SwerveSubsystem dt) {
-    return run(() -> { // This RunCommand starts the shooting pipeline
-      this.runSystemAtVelocity();
-      this.aimAtHub(dt);
-      m_hopper.runSystemAtVelocity(480, 500);
-    });
+    return runSystemAtVelocity(dt).withTimeout(0.1).andThen(
+        aimAtHub(dt)
+      ).andThen(
+        m_hopper.runSystemAtPercent(0.5, 0.5).withTimeout(0.1)
+      );
   }
 
   /**
@@ -121,10 +120,9 @@ public class Shooter extends SubsystemBase {
    * @return {@link RunCommand} - Command to run
    */
   public Command stopFullSystem() {
-    return run(() -> {
-      this.stopSystem();
-      m_hopper.stopSystem();
-    });
+    return stopSystem().withTimeout(0.1).andThen(
+        m_hopper.stopSystem().withTimeout(0.1)
+      );
   }
 
   /**
@@ -134,12 +132,12 @@ public class Shooter extends SubsystemBase {
   */
   public Command aimAtHub(SwerveSubsystem dt) {
     return run(() -> {
-      Pose2d currentPose = dt.getPose();
+      Pose2d currentPose = getShooterPose(dt);
       Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
       Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
       Rotation2d vector = new Rotation2d(difference.getX(), difference.getY());
-      dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
-    }).withTimeout(10);
+      dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() - 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+    }).withTimeout(1);
   }
 
   /**
@@ -180,7 +178,7 @@ public class Shooter extends SubsystemBase {
    */
   public double getOptimalShooterVelocity(SwerveSubsystem dt) {
     double distance = this.getDistanceToHub(dt);
-    double rpm = distance * 750; // Replace with magical shooter equation
+    double rpm = (567.3692 * distance) + 2419.8747;
     return rpm;
   }
 

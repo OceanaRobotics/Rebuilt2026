@@ -53,7 +53,7 @@ public class Hopper extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("agitator rpm: ", agitatorEncoder.getVelocity());
+    SmartDashboard.putNumber("hopper rpm: ", agitatorEncoder.getVelocity());
     SmartDashboard.putNumber("kicker rpm: ", kickerEncoder.getVelocity());
   }
 
@@ -98,8 +98,10 @@ public class Hopper extends SubsystemBase {
    * @param kickerRPM - Desired motor RPM
    * @return {@link RunCommand} - Command to run
    */
-  public Command runSystemAtVelocity(double agitatorRPM, double kickerRPM) {
+  public Command runSystemAtVelocity() {
     return run(() -> {
+      double agitatorRPM = SmartDashboard.getNumber("hopper desired rpm: ", 0.0);
+      double kickerRPM = SmartDashboard.getNumber("kicker desired rpm: ", 0.0);
       agitatorController.setSetpoint(agitatorRPM, ControlType.kVelocity);
       kickerController.setSetpoint(kickerRPM, ControlType.kVelocity);
     });

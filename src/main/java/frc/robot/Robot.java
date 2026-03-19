@@ -15,6 +15,9 @@ import frc.robot.subsystems.swervedrive.VisionNew;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
@@ -41,6 +44,7 @@ public class Robot extends TimedRobot {
   }
 
   public StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("My Pose", Pose2d.struct).publish();
+  public StructPublisher<Pose2d> hubpublisher = NetworkTableInstance.getDefault().getStructTopic("hub", Pose2d.struct).publish();
 
   /**
    * This function is run when the robot is first started up and should be used for any initialization code.
@@ -60,19 +64,21 @@ public class Robot extends TimedRobot {
     {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
-    SmartDashboard.putNumber("shooter p: ", 0.000150);
+    SmartDashboard.putNumber("shooter p: ", 0.0002);
     SmartDashboard.putNumber("shooter i: ", 0.0);
-    SmartDashboard.putNumber("shooter d: ", 0.0);
-    SmartDashboard.putNumber("shooter kV: ", 0.000150);
+    SmartDashboard.putNumber("shooter d: ", 0.005);
+    SmartDashboard.putNumber("shooter kV: ", 0.000185);
     SmartDashboard.putNumber("shooter desired rpm: ", 0.0);
     SmartDashboard.putNumber("hopper p: ", 0.0);
     SmartDashboard.putNumber("hopper i: ", 0.0);
     SmartDashboard.putNumber("hopper d: ", 0.0);
     SmartDashboard.putNumber("hopper kV: ", 0.0);
+    SmartDashboard.putNumber("hopper desired rpm: ", 0.0);
     SmartDashboard.putNumber("kicker p: ", 0.0);
     SmartDashboard.putNumber("kicker i: ", 0.0);
     SmartDashboard.putNumber("kicker d: ", 0.0);
     SmartDashboard.putNumber("kicker kV: ", 0.0);
+    SmartDashboard.putNumber("kicker desired rpm: ", 0.0);
   }
 
   /**
@@ -92,9 +98,9 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     visionNew.periodic();
     SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToHub(m_robotContainer.drivebase));
-    SmartDashboard.putNumber("gyro angle: ", m_robotContainer.drivebase.getHeading().getDegrees());
-    SmartDashboard.putString("stdDevs", visionNew.getEstimationStdDevs().toString());
     publisher.set(m_robotContainer.drivebase.getPose());
+    Pose2d hubPose = m_robotContainer.drivebase.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+    hubpublisher.set(hubPose);
   }
 
   /**
