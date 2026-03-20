@@ -145,14 +145,16 @@ public class RobotContainer
       // Teleop controls
 
       driverXbox.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
-      driverXbox.x().onTrue(shooter.reconfigureMotor());
+      // driverXbox.x().onTrue(shooter.reconfigureMotor());
       driverXbox.b().onTrue(shooter.runSystemAtVelocity(drivebase)).onFalse(shooter.stopSystem());
       driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.5, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.60)).onFalse(intake.stopSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
-      driverXbox.y().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
+      driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
       driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
       driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());
+      driverXbox.leftTrigger().and(driverXbox.x()).onTrue(intake.runSystemAtPercent(0.9)).onFalse(intake.stopSystem());
+      driverXbox.povUp().and(driverXbox.x()).onTrue(intake.retractIntakePowerful()).onFalse(intake.stopSystem());
     }
 
   }

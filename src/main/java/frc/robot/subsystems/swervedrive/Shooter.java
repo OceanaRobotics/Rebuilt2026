@@ -29,6 +29,7 @@ public class Shooter extends SubsystemBase {
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
     public Hopper m_hopper = new Hopper();
     public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(90)));
+    public Double distanceToHub;
 
   /**
    * A subsystem handling the entire shooting pipeline, including hopper and intake
@@ -41,7 +42,7 @@ public class Shooter extends SubsystemBase {
       .i(0)
       .d(0.005)
       .outputRange(0, 1)
-      .feedForward.kV(0.0001875, ClosedLoopSlot.kSlot0);
+      .feedForward.kV(0.000195, ClosedLoopSlot.kSlot0);
     shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
@@ -89,7 +90,7 @@ public class Shooter extends SubsystemBase {
    */
   public Command runShooterSystem(SwerveSubsystem dt) {
     return runSystemAtVelocity(dt).withTimeout(0.1).andThen(
-        aimAtHub(dt)
+        aimAtClosestHub(dt)
       ).andThen(
         m_hopper.runSystemAtPercent(0.5, 0.5).withTimeout(0.1)
       );
@@ -126,7 +127,7 @@ public class Shooter extends SubsystemBase {
   }
 
   /**
-  * Aim the shooter at the hub
+  * Aim the shooter at the hub of the current alliance
   * @param dt - The robot drivetrain
   * @return {@link RunCommand} - Command to run
   */
@@ -141,11 +142,41 @@ public class Shooter extends SubsystemBase {
   }
 
   /**
+   * Aim the shooter at whichever hub is closest, regardless of alliance
+   * @param dt - The robot drivetrain
+   * @return {@link RunCommand} - Command to run
+   */
+  public Command aimAtClosestHub(SwerveSubsystem dt) {
+    return run(() -> {
+      Pose2d currentPose = dt.getPose();
+      Pose2d blueHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+      Pose2d redHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+      Translation2d differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
+      Translation2d differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
+      Double distanceToBlueHub = differenceToBlueHub.getNorm();
+      Double distanceToRedHub = differenceToRedHub.getNorm();
+      boolean closerToRedHub = distanceToRedHub > distanceToBlueHub;
+      if (closerToRedHub) {
+        distanceToHub = distanceToRedHub;
+        Rotation2d vector = new Rotation2d(differenceToRedHub.getX(), differenceToRedHub.getY());
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() - 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+      } else {
+        distanceToHub = distanceToBlueHub;
+        Rotation2d vector = new Rotation2d(differenceToBlueHub.getX(), differenceToBlueHub.getY());
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() - 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+      }
+    }).withTimeout(1);
+  }
+
+  /**
    * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
    * @param dt - The robot drivetrain
    * @return {@link Double} - Distance to the hub
    */
-  public double getDistanceToHub(SwerveSubsystem dt) {
+  public double getDistanceToHub(SwerveSubsystem dt, boolean ignoreAlliance) {
+    if (ignoreAlliance) {
+      return distanceToHub;
+    }
     Pose2d currentPose = dt.getPose();
     Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
     Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
@@ -177,7 +208,7 @@ public class Shooter extends SubsystemBase {
    * @return {@link Double} - RPM
    */
   public double getOptimalShooterVelocity(SwerveSubsystem dt) {
-    double distance = this.getDistanceToHub(dt);
+    double distance = this.getDistanceToHub(dt, true);
     double rpm = (567.3692 * distance) + 2419.8747;
     return rpm;
   }
