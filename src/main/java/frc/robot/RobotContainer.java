@@ -103,6 +103,7 @@ public class RobotContainer
     autoChooser.addOption("RedBasicLeftAuto", new PathPlannerAuto("RedBasicAuto", true));
     autoChooser.addOption("RedCenterAuto", new PathPlannerAuto("RedCenterAuto"));
     autoChooser.addOption("BlueCenterAuto", new PathPlannerAuto("BlueCenterAuto"));
+    autoChooser.addOption("ShootAuto", new PathPlannerAuto("ShootAuto"));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
