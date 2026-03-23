@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -28,13 +29,15 @@ public class Shooter extends SubsystemBase {
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
     public Hopper m_hopper = new Hopper();
-    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(90)));
-    public Double distanceToHub;
+    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(-90)));
+    public Double distanceToHub = 4.0;
+    public Double batteryVoltage = 0.0;
+    private Double shooterKv;
 
   /**
    * A subsystem handling the entire shooting pipeline, including hopper and intake
    */
-  public Shooter() {
+  public Shooter(SwerveSubsystem dt) {
     motorConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1);
     motorConfig.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -49,6 +52,20 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("shooter rpm: ", motorEncoder.getVelocity());
+    if (Math.abs(batteryVoltage - RobotController.getBatteryVoltage()) >= 0.2) {
+      updateShooterKv();
+    }
+  }
+
+  /**
+   * Update the shooter kV based on the battery voltage
+   */
+  private void updateShooterKv() {
+    batteryVoltage = RobotController.getBatteryVoltage();
+    shooterKv = (-0.00001 * batteryVoltage) + 0.000305;
+    SmartDashboard.putNumber("shooter kV: ", shooterKv);
+    motorConfig.closedLoop.feedForward.kV(shooterKv, ClosedLoopSlot.kSlot0);
+    shooterMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   /**
@@ -56,9 +73,9 @@ public class Shooter extends SubsystemBase {
    * @param power The desired power percent to run the motor at
    * @return {@link RunCommand} - Command to run
    */
-  public Command runSystemAtPercent() {
+  public Command runSystemAtPercent(double percent) {
     return run(() -> {
-      shooterMotor.set(SmartDashboard.getNumber("shooter power: ", 0.2));
+      shooterMotor.set(percent);
     });
   }
 
@@ -89,7 +106,8 @@ public class Shooter extends SubsystemBase {
    * @return {@link RunCommand} - Very fancy command to run
    */
   public Command runShooterSystem(SwerveSubsystem dt) {
-    return runSystemAtVelocity(dt).withTimeout(0.1).andThen(
+    return run(() -> updateShooterKv()).withTimeout(0.2).andThen(
+      runSystemAtVelocity(dt).withTimeout(0.2)).andThen(
         aimAtClosestHub(dt)
       ).andThen(
         m_hopper.runSystemAtPercent(0.5, 0.5).withTimeout(0.1)
@@ -148,39 +166,66 @@ public class Shooter extends SubsystemBase {
    */
   public Command aimAtClosestHub(SwerveSubsystem dt) {
     return run(() -> {
-      Pose2d currentPose = dt.getPose();
+      Pose2d currentPose = getShooterPose(dt);
       Pose2d blueHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
       Pose2d redHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
       Translation2d differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
       Translation2d differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
       Double distanceToBlueHub = differenceToBlueHub.getNorm();
       Double distanceToRedHub = differenceToRedHub.getNorm();
-      boolean closerToRedHub = distanceToRedHub > distanceToBlueHub;
+      boolean closerToRedHub = distanceToRedHub < distanceToBlueHub;
+      SmartDashboard.putNumber("red hub distance: ", distanceToRedHub);
+      SmartDashboard.putNumber("blue hub distance: ", distanceToBlueHub);
+      SmartDashboard.putBoolean("closer to red: ", closerToRedHub);
       if (closerToRedHub) {
         distanceToHub = distanceToRedHub;
         Rotation2d vector = new Rotation2d(differenceToRedHub.getX(), differenceToRedHub.getY());
-        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() - 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
       } else {
         distanceToHub = distanceToBlueHub;
         Rotation2d vector = new Rotation2d(differenceToBlueHub.getX(), differenceToBlueHub.getY());
-        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() - 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
       }
     }).withTimeout(1);
   }
 
   /**
-   * Get the current straight-line distance to the center of the hub (purely X and Y, height is not considered)
+   * Get the current straight-line distance to the center of the alliance hub (purely X and Y, height is not considered)
    * @param dt - The robot drivetrain
    * @return {@link Double} - Distance to the hub
    */
-  public double getDistanceToHub(SwerveSubsystem dt, boolean ignoreAlliance) {
-    if (ignoreAlliance) {
-      return distanceToHub;
-    }
+  public double getDistanceToHub(SwerveSubsystem dt) {
     Pose2d currentPose = dt.getPose();
     Pose2d hubPose = dt.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
     Translation2d difference = currentPose.relativeTo(hubPose).getTranslation();
-    return difference.getNorm();
+    double distance = difference.getNorm();
+    distanceToHub = distance;
+    return distance;
+  }
+
+  /**
+   * Return the distance to the closest hub, rather than the alliance hub
+   * @param dt - The robot drivetrain
+   * @return Distance
+   */
+  public double getDistanceToClosestHub(SwerveSubsystem dt) {
+    Pose2d currentPose = getShooterPose(dt);
+    Pose2d blueHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+    Pose2d redHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+    Translation2d differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
+    Translation2d differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
+    Double distanceToBlueHub = differenceToBlueHub.getNorm();
+    Double distanceToRedHub = differenceToRedHub.getNorm();
+    boolean closerToRedHub = distanceToRedHub < distanceToBlueHub;
+    SmartDashboard.putNumber("red hub distance: ", distanceToRedHub);
+    SmartDashboard.putNumber("blue hub distance: ", distanceToBlueHub);
+    SmartDashboard.putBoolean("closer to red: ", closerToRedHub);
+    if (closerToRedHub) {
+      distanceToHub = distanceToRedHub;
+    } else {
+      distanceToHub = distanceToBlueHub;
+    }
+    return distanceToHub;
   }
 
   /**
@@ -208,9 +253,15 @@ public class Shooter extends SubsystemBase {
    * @return {@link Double} - RPM
    */
   public double getOptimalShooterVelocity(SwerveSubsystem dt) {
-    double distance = this.getDistanceToHub(dt, true);
+    double distance = this.getDistanceToClosestHub(dt);
     double rpm = (567.3692 * distance) + 2419.8747;
     return rpm;
+  }
+
+  public Command spinAtKnown() {
+    return run(() -> {
+      motorController.setSetpoint(4000, ControlType.kVelocity);
+    });
   }
 
 }

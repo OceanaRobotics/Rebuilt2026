@@ -79,6 +79,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("kicker d: ", 0.0);
     SmartDashboard.putNumber("kicker kV: ", 0.0);
     SmartDashboard.putNumber("kicker desired rpm: ", 0.0);
+    SmartDashboard.putNumber("red hub distance: ", 0);
+    SmartDashboard.putNumber("blue hub distance: ", 0);
+    SmartDashboard.putBoolean("closer to red: ", false);
   }
 
   /**
@@ -97,7 +100,7 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     visionNew.periodic();
-    SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToHub(m_robotContainer.drivebase));
+    SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToClosestHub(m_robotContainer.drivebase));
     publisher.set(m_robotContainer.drivebase.getPose());
     Pose2d hubPose = m_robotContainer.drivebase.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
     hubpublisher.set(hubPose);

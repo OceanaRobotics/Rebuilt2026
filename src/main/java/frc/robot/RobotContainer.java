@@ -36,7 +36,7 @@ public class RobotContainer
   // Replace with CommandPS4Controller or CommandJoystick if needed
   public final CommandXboxController driverXbox = new CommandXboxController(0);
   public final SwerveSubsystem drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve/neo"));
-  public final Shooter shooter = new Shooter();
+  public final Shooter shooter = new Shooter(drivebase);
   public final Intake intake = new Intake();
   public final SendableChooser<Command> autoChooser;
 
@@ -44,8 +44,8 @@ public class RobotContainer
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
    */
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(drivebase.getSwerveDrive(),
-                                                                () -> driverXbox.getLeftY() * 1,
-                                                                () -> driverXbox.getLeftX() * 1)
+                                                                () -> driverXbox.getLeftY() * -1,
+                                                                () -> driverXbox.getLeftX() * -1)
                                                             .withControllerRotationAxis(driverXbox::getRightX)
                                                             .deadband(OperatorConstants.DEADBAND)
                                                             .scaleTranslation(0.8)
@@ -103,7 +103,8 @@ public class RobotContainer
     autoChooser.addOption("RedBasicLeftAuto", new PathPlannerAuto("RedBasicAuto", true));
     autoChooser.addOption("RedCenterAuto", new PathPlannerAuto("RedCenterAuto"));
     autoChooser.addOption("BlueCenterAuto", new PathPlannerAuto("BlueCenterAuto"));
-    autoChooser.addOption("ShootAuto", new PathPlannerAuto("ShootAuto"));
+    autoChooser.addOption("BlueHubAuto", new PathPlannerAuto("BlueHubAuto"));
+    autoChooser.addOption("RedHubAuto", new PathPlannerAuto("RedHubAuto"));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -146,16 +147,18 @@ public class RobotContainer
       // Teleop controls
 
       driverXbox.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
-      // driverXbox.x().onTrue(shooter.reconfigureMotor());
+      driverXbox.x().onTrue(shooter.spinAtKnown()).onFalse(shooter.stopSystem());
       driverXbox.b().onTrue(shooter.runSystemAtVelocity(drivebase)).onFalse(shooter.stopSystem());
       driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.5, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.60)).onFalse(intake.stopSystem());
       driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
+      driverXbox.leftBumper().onTrue(shooter.aimAtClosestHub(drivebase));
       driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
       driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
       driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());
       driverXbox.leftTrigger().and(driverXbox.x()).onTrue(intake.runSystemAtPercent(0.9)).onFalse(intake.stopSystem());
       driverXbox.povUp().and(driverXbox.x()).onTrue(intake.retractIntakePowerful()).onFalse(intake.stopSystem());
+      driverXbox.y().onTrue(shooter.runSystemAtPercent(0.5).withTimeout(0.5).andThen(shooter.m_hopper.runSystemAtPercent(0.5, 0.5))).onFalse(intake.stopSystem().alongWith(shooter.stopFullSystem()));
     }
 
   }

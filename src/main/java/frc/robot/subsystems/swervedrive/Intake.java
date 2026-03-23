@@ -99,7 +99,7 @@ public class Intake extends SubsystemBase {
    */
   public Command retractIntakePowerful() {
     return run(() -> {
-      intakeMover.set(-0.8);
+      intakeMover.set(-1);
     });
   }
 
