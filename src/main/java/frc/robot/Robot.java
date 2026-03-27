@@ -8,16 +8,13 @@ import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.swervedrive.VisionNew;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
@@ -43,8 +40,8 @@ public class Robot extends TimedRobot {
     return instance;
   }
 
-  public StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("My Pose", Pose2d.struct).publish();
-  public StructPublisher<Pose2d> hubpublisher = NetworkTableInstance.getDefault().getStructTopic("hub", Pose2d.struct).publish();
+  public StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("Robot Pose", Pose2d.struct).publish();
+  public StructPublisher<Pose2d> hubPose = NetworkTableInstance.getDefault().getStructTopic("Hub Pose", Pose2d.struct).publish();
 
   /**
    * This function is run when the robot is first started up and should be used for any initialization code.
@@ -64,24 +61,24 @@ public class Robot extends TimedRobot {
     {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
-    SmartDashboard.putNumber("shooter p: ", 0.0002);
-    SmartDashboard.putNumber("shooter i: ", 0.0);
-    SmartDashboard.putNumber("shooter d: ", 0.005);
-    SmartDashboard.putNumber("shooter kV: ", 0.000185);
-    SmartDashboard.putNumber("shooter desired rpm: ", 0.0);
-    SmartDashboard.putNumber("hopper p: ", 0.0);
-    SmartDashboard.putNumber("hopper i: ", 0.0);
-    SmartDashboard.putNumber("hopper d: ", 0.0);
-    SmartDashboard.putNumber("hopper kV: ", 0.0);
-    SmartDashboard.putNumber("hopper desired rpm: ", 0.0);
-    SmartDashboard.putNumber("kicker p: ", 0.0);
-    SmartDashboard.putNumber("kicker i: ", 0.0);
-    SmartDashboard.putNumber("kicker d: ", 0.0);
-    SmartDashboard.putNumber("kicker kV: ", 0.0);
-    SmartDashboard.putNumber("kicker desired rpm: ", 0.0);
-    SmartDashboard.putNumber("red hub distance: ", 0);
-    SmartDashboard.putNumber("blue hub distance: ", 0);
-    SmartDashboard.putBoolean("closer to red: ", false);
+    // SmartDashboard.putNumber("shooter p: ", 0.0002);
+    // SmartDashboard.putNumber("shooter i: ", 0.0);
+    // SmartDashboard.putNumber("shooter d: ", 0.005);
+    // SmartDashboard.putNumber("shooter kV: ", 0.000185);
+    // SmartDashboard.putNumber("shooter desired rpm: ", 0.0);
+    // SmartDashboard.putNumber("hopper p: ", 0.0);
+    // SmartDashboard.putNumber("hopper i: ", 0.0);
+    // SmartDashboard.putNumber("hopper d: ", 0.0);
+    // SmartDashboard.putNumber("hopper kV: ", 0.0);
+    // SmartDashboard.putNumber("hopper desired rpm: ", 0.0);
+    // SmartDashboard.putNumber("kicker p: ", 0.0);
+    // SmartDashboard.putNumber("kicker i: ", 0.0);
+    // SmartDashboard.putNumber("kicker d: ", 0.0);
+    // SmartDashboard.putNumber("kicker kV: ", 0.0);
+    // SmartDashboard.putNumber("kicker desired rpm: ", 0.0);
+    // SmartDashboard.putNumber("red hub distance: ", 0);
+    // SmartDashboard.putNumber("blue hub distance: ", 0);
+    // SmartDashboard.putBoolean("closer to red: ", false);
   }
 
   /**
@@ -100,10 +97,8 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     visionNew.periodic();
-    SmartDashboard.putNumber("distance to hub: ", m_robotContainer.shooter.getDistanceToClosestHub(m_robotContainer.drivebase));
     publisher.set(m_robotContainer.drivebase.getPose());
-    Pose2d hubPose = m_robotContainer.drivebase.isRedAlliance() ? new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0)) : new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-    hubpublisher.set(hubPose);
+    hubPose.set(m_robotContainer.shooter.hubPose);
   }
 
   /**

@@ -40,21 +40,21 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionNew {
   private final PhotonCamera camera;
-  // private final PhotonCamera camera2;
+  private final PhotonCamera camera2;
   private final PhotonPoseEstimator photonEstimator;
-  // private final PhotonPoseEstimator photonEstimator2;
+  private final PhotonPoseEstimator photonEstimator2;
   private Matrix<N3, N1> curStdDevs;
   private final EstimateConsumer estConsumer;
 
   /**
-   * @param estConsumer Lamba that will accept a pose estimate and pass it to your desired {@link edu.wpi.first.math.estimator.SwerveDrivePoseEstimator}
+   * @param estConsumer Lambda that will accept a pose estimate and pass it to your desired {@link edu.wpi.first.math.estimator.SwerveDrivePoseEstimator}
    */
   public VisionNew(EstimateConsumer estConsumer) {
     this.estConsumer = estConsumer;
     camera = new PhotonCamera(kCameraName);
-    // camera2 = new PhotonCamera(kCamera2Name);
+    camera2 = new PhotonCamera(kCamera2Name);
     photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
-    // photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
+    photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
   }
 
   public void periodic() {
@@ -73,20 +73,20 @@ public class VisionNew {
         });
     }
 
-    // Optional<EstimatedRobotPose> visionEst2 = Optional.empty();
-    // for (var result : camera2.getAllUnreadResults()) {
-    //   visionEst2 = photonEstimator2.estimateCoprocMultiTagPose(result);
-    //   if (visionEst2.isEmpty()) {
-    //     visionEst2 = photonEstimator2.estimateLowestAmbiguityPose(result);
-    //   }
-    //   updateEstimationStdDevs(visionEst2, result.getTargets());
-    //   visionEst2.ifPresent(
-    //     est -> {
-    //       // Change our trust in the measurement based on the tags we can see
-    //       var estStdDevs = getEstimationStdDevs();
-    //       estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-    //     });
-    // }
+    Optional<EstimatedRobotPose> visionEst2 = Optional.empty();
+    for (var result : camera2.getAllUnreadResults()) {
+      visionEst2 = photonEstimator2.estimateCoprocMultiTagPose(result);
+      if (visionEst2.isEmpty()) {
+        visionEst2 = photonEstimator2.estimateLowestAmbiguityPose(result);
+      }
+      updateEstimationStdDevs(visionEst2, result.getTargets());
+      visionEst2.ifPresent(
+        est -> {
+          // Change our trust in the measurement based on the tags we can see
+          var estStdDevs = getEstimationStdDevs();
+          estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+        });
+    }
   }
 
   /**

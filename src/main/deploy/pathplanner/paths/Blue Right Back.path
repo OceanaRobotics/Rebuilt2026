@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 3.68,
-        "y": 5.024
+        "y": 3.0
       },
       "prevControl": null,
       "nextControl": {
         "x": 2.68,
-        "y": 5.024
+        "y": 3.0
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.954,
-        "y": 5.024
+        "x": 2.0,
+        "y": 3.0
       },
       "prevControl": {
-        "x": 2.9539999999999997,
-        "y": 5.024
+        "x": 3.0,
+        "y": 3.0
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Blue Paths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

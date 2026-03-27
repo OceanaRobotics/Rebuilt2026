@@ -22,6 +22,7 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.MathUtil;
 
 public class Shooter extends SubsystemBase {
     private SparkMax shooterMotor = new SparkMax(11, MotorType.kBrushless);
@@ -29,11 +30,21 @@ public class Shooter extends SubsystemBase {
     private SparkMaxConfig motorConfig = new SparkMaxConfig();
     private RelativeEncoder motorEncoder = shooterMotor.getEncoder();
     public Hopper m_hopper = new Hopper();
-    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(-9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(-90)));
+    public final Transform2d shooterOffset = new Transform2d(Units.inchesToMeters(9.1), Units.inchesToMeters(-1.4), new Rotation2d(Units.degreesToRadians(-90)));
+    private Pose2d blueHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
+    private Pose2d redHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
     public Double distanceToHub = 4.0;
+    private Boolean redClosest = true;
+    public Pose2d hubPose;
     public Double batteryVoltage = 0.0;
     private Double shooterKv;
-
+    private SwerveSubsystem drivetrain;
+    private Pose2d currentPose;
+    private Translation2d differenceToBlueHub;
+    private Translation2d differenceToRedHub;
+    private Double distanceToBlueHub;
+    private Double distanceToRedHub;
+    private boolean closerToRedHub;
   /**
    * A subsystem handling the entire shooting pipeline, including hopper and intake
    */
@@ -47,11 +58,26 @@ public class Shooter extends SubsystemBase {
       .outputRange(0, 1)
       .feedForward.kV(0.000195, ClosedLoopSlot.kSlot0);
     shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    drivetrain = dt;
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("shooter rpm: ", motorEncoder.getVelocity());
+    currentPose = getShooterPose(drivetrain);
+    differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
+    differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
+    distanceToBlueHub = differenceToBlueHub.getNorm();
+    distanceToRedHub = differenceToRedHub.getNorm();
+    closerToRedHub = distanceToRedHub < distanceToBlueHub;
+    redClosest = closerToRedHub;
+    hubPose = closerToRedHub ? redHubPose : blueHubPose;
+    distanceToHub = getDistanceToClosestHub(drivetrain);
+    Rotation2d vector = closerToRedHub ? new Rotation2d(differenceToRedHub.getX(), differenceToRedHub.getY()) : new Rotation2d(differenceToBlueHub.getX(), differenceToBlueHub.getY());
+    SmartDashboard.putNumber("Shooter RPM: ", motorEncoder.getVelocity());
+    SmartDashboard.putNumber("Distance to Hub: ", distanceToHub);
+    SmartDashboard.putBoolean("Closest Hub: ", redClosest);
+    SmartDashboard.putNumber("Angle to Hub: ", vector.getDegrees());
+    SmartDashboard.putNumber("Modulo Angle: ", MathUtil.inputModulus(drivetrain.getPose().getRotation().getDegrees() + 90, -180, 180));
     if (Math.abs(batteryVoltage - RobotController.getBatteryVoltage()) >= 0.2) {
       updateShooterKv();
     }
@@ -96,7 +122,7 @@ public class Shooter extends SubsystemBase {
    */
   public Command runSystemAtVelocity(SwerveSubsystem drivebase) {
     return run(() -> {
-      motorController.setSetpoint(this.getOptimalShooterVelocity(drivebase), ControlType.kVelocity);
+      motorController.setSetpoint(this.getOptimalShooterVelocity(), ControlType.kVelocity);
     });
   }
 
@@ -166,25 +192,14 @@ public class Shooter extends SubsystemBase {
    */
   public Command aimAtClosestHub(SwerveSubsystem dt) {
     return run(() -> {
-      Pose2d currentPose = getShooterPose(dt);
-      Pose2d blueHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-      Pose2d redHubPose = new Pose2d(new Translation2d(Units.inchesToMeters(651.22 - 182.11), Units.inchesToMeters(158.84)), new Rotation2d(0));
-      Translation2d differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
-      Translation2d differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
-      Double distanceToBlueHub = differenceToBlueHub.getNorm();
-      Double distanceToRedHub = differenceToRedHub.getNorm();
-      boolean closerToRedHub = distanceToRedHub < distanceToBlueHub;
-      SmartDashboard.putNumber("red hub distance: ", distanceToRedHub);
-      SmartDashboard.putNumber("blue hub distance: ", distanceToBlueHub);
-      SmartDashboard.putBoolean("closer to red: ", closerToRedHub);
       if (closerToRedHub) {
         distanceToHub = distanceToRedHub;
         Rotation2d vector = new Rotation2d(differenceToRedHub.getX(), differenceToRedHub.getY());
-        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (MathUtil.inputModulus(dt.getPose().getRotation().getDegrees() + 90, -180, 180) - vector.getDegrees()) * 0.06, dt.getHeading()));
       } else {
         distanceToHub = distanceToBlueHub;
         Rotation2d vector = new Rotation2d(differenceToBlueHub.getX(), differenceToBlueHub.getY());
-        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, ((dt.getPose().getRotation().getDegrees() + 90) - vector.getDegrees()) * 0.055, dt.getHeading()));
+        dt.drive(ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, (MathUtil.inputModulus(dt.getPose().getRotation().getDegrees() + 90, -180, 180) - vector.getDegrees()) * 0.06, dt.getHeading()));
       }
     }).withTimeout(1);
   }
@@ -217,9 +232,6 @@ public class Shooter extends SubsystemBase {
     Double distanceToBlueHub = differenceToBlueHub.getNorm();
     Double distanceToRedHub = differenceToRedHub.getNorm();
     boolean closerToRedHub = distanceToRedHub < distanceToBlueHub;
-    SmartDashboard.putNumber("red hub distance: ", distanceToRedHub);
-    SmartDashboard.putNumber("blue hub distance: ", distanceToBlueHub);
-    SmartDashboard.putBoolean("closer to red: ", closerToRedHub);
     if (closerToRedHub) {
       distanceToHub = distanceToRedHub;
     } else {
@@ -252,9 +264,8 @@ public class Shooter extends SubsystemBase {
    * @param dt - The robot drivetrain
    * @return {@link Double} - RPM
    */
-  public double getOptimalShooterVelocity(SwerveSubsystem dt) {
-    double distance = this.getDistanceToClosestHub(dt);
-    double rpm = (567.3692 * distance) + 2419.8747;
+  public double getOptimalShooterVelocity() {
+    double rpm = (567.3692 * distanceToHub) + 2200.8747; // 2419.8747
     return rpm;
   }
 

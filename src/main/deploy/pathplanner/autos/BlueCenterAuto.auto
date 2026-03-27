@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Blue Off Wall"
+            "pathName": "Blue Center Back"
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "extendIntake"
+            "waitTime": 1.5
           }
         },
         {
@@ -25,55 +25,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stopFullSystem"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "runIntakeAtVelocity"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue Off Wall Pickup"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stopIntake"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Blue Off Wall Return"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "runShooterSystem"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 4.0
+            "waitTime": 7.5
           }
         },
         {
@@ -86,6 +38,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Blue Autos",
   "choreoAuto": false
 }

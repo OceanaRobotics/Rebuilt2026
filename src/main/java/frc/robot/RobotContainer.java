@@ -7,11 +7,8 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -80,31 +77,17 @@ public class RobotContainer
   public RobotContainer()
   {
     // Shooter auto commands
-    // NamedCommands.registerCommand("runShooterAtVelocity",  shooter.runSystemAtVelocity()); // !! ADJUST THIS !!
     NamedCommands.registerCommand("runShooterSystem",  shooter.runShooterSystem(drivebase)); //need this
     NamedCommands.registerCommand("stopFullSystem", shooter.stopFullSystem()); //need this
-    NamedCommands.registerCommand("aimAtHub", shooter.aimAtHub(drivebase));
-    
-    // Intake auto commands
-    NamedCommands.registerCommand("extendIntake", intake.extendIntake()); //need this
-    NamedCommands.registerCommand("retractIntake", intake.retractIntake()); //need this
-    NamedCommands.registerCommand("runIntakeAtVelocity", intake.runSystemAtVelocity(1)); //need this
-    NamedCommands.registerCommand("stopIntake", intake.stopSystem()); //need this
-
-    // Hopper auto commands
-    NamedCommands.registerCommand("runHopperAtVelocity", shooter.m_hopper.runSystemAtVelocity());
-    NamedCommands.registerCommand("reverseHopper", shooter.m_hopper.reverseSystem());
 
     // Add the choices to autoChooser
     autoChooser = AutoBuilder.buildAutoChooser();
-    autoChooser.addOption("BlueBasicLeftAuto", new PathPlannerAuto("BlueBasicAuto"));
-    autoChooser.addOption("BlueBasicRightAuto", new PathPlannerAuto("BlueBasicAuto" , true));
-    autoChooser.addOption("RedBasicRightAuto", new PathPlannerAuto("RedBasicAuto"));
-    autoChooser.addOption("RedBasicLeftAuto", new PathPlannerAuto("RedBasicAuto", true));
-    autoChooser.addOption("RedCenterAuto", new PathPlannerAuto("RedCenterAuto"));
-    autoChooser.addOption("BlueCenterAuto", new PathPlannerAuto("BlueCenterAuto"));
-    autoChooser.addOption("BlueHubAuto", new PathPlannerAuto("BlueHubAuto"));
-    autoChooser.addOption("RedHubAuto", new PathPlannerAuto("RedHubAuto"));
+    autoChooser.addOption("Blue Right", new PathPlannerAuto("BlueRightAuto"));
+    autoChooser.addOption("Blue Center", new PathPlannerAuto("BlueCenterAuto"));
+    autoChooser.addOption("Blue Left", new PathPlannerAuto("BlueLeftAuto"));
+    autoChooser.addOption("Red Right", new PathPlannerAuto("RedRightAuto"));
+    autoChooser.addOption("Red Center", new PathPlannerAuto("RedCenterAuto"));
+    autoChooser.addOption("Red Left", new PathPlannerAuto("RedLeftAuto"));
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -124,41 +107,25 @@ public class RobotContainer
   private void configureBindings()
   {
     Command driveFieldOrientedAnglularVelocity = drivebase.driveFieldOriented(driveAngularVelocity);
-    Command driveFieldOrientedDirectAngleKeyboard = drivebase.driveFieldOriented(driveDirectAngleKeyboard);
 
-    if (RobotBase.isSimulation()) {
-      drivebase.setDefaultCommand(driveFieldOrientedDirectAngleKeyboard);
-      driverXbox.start().onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
-      driverXbox.button(1).whileTrue(drivebase.sysIdDriveMotorCommand());
-    } else {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    }
+    drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity);
     
     if (DriverStation.isTest()) {
-      // This is for test mode only
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
-
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
-      driverXbox.leftBumper().onTrue(Commands.none());
-      driverXbox.rightBumper().onTrue(Commands.none());
     } else {
       // Teleop controls
 
-      driverXbox.start().onTrue(Commands.runOnce(drivebase::zeroGyro));
+      driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.x().onTrue(shooter.spinAtKnown()).onFalse(shooter.stopSystem());
       driverXbox.b().onTrue(shooter.runSystemAtVelocity(drivebase)).onFalse(shooter.stopSystem());
       driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.5, 0.5)).onFalse(shooter.m_hopper.stopSystem());
-      driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.60)).onFalse(intake.stopSystem());
-      driverXbox.rightBumper().onTrue(shooter.aimAtHub(drivebase));
       driverXbox.leftBumper().onTrue(shooter.aimAtClosestHub(drivebase));
+      driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.7)).onFalse(intake.stopRoller());
       driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
       driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
       driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());
-      driverXbox.leftTrigger().and(driverXbox.x()).onTrue(intake.runSystemAtPercent(0.9)).onFalse(intake.stopSystem());
-      driverXbox.povUp().and(driverXbox.x()).onTrue(intake.retractIntakePowerful()).onFalse(intake.stopSystem());
-      driverXbox.y().onTrue(shooter.runSystemAtPercent(0.5).withTimeout(0.5).andThen(shooter.m_hopper.runSystemAtPercent(0.5, 0.5))).onFalse(intake.stopSystem().alongWith(shooter.stopFullSystem()));
     }
 
   }

@@ -74,12 +74,23 @@ public class Intake extends SubsystemBase {
   }
 
   /**
+   * Stop purely just the intake roller motor, not the lift motor
+   * @return {@link RunCommand} - Command to run
+   */
+   public Command stopRoller() {
+    return run(() -> {
+      intakeController.setSetpoint(0, ControlType.kVelocity);
+    });
+  }
+
+
+  /**
    * Extend out the intake arm
    * @return {@link RunCommand} - Command to run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
    */
   public Command extendIntake() {
     return run(() -> {
-     intakeMover.set(0.15);
+     intakeMover.set(0.1);
     });
   }
 
@@ -89,17 +100,7 @@ public class Intake extends SubsystemBase {
    */
   public Command retractIntake() {
     return run(() -> {
-      intakeMover.set(-0.5);
-    });
-  }
-
-  /**
-   * Retract the intake arm with more power, for a full hopper
-   * @return {@link RunCommand} - Command to run
-   */
-  public Command retractIntakePowerful() {
-    return run(() -> {
-      intakeMover.set(-1);
+      intakeMover.set(-0.2);
     });
   }
 

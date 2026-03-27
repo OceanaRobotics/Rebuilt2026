@@ -26,13 +26,13 @@ import swervelib.math.Matter;
  */
 public final class Constants {
 
-  public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
+  public static final double ROBOT_MASS = 85 * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
   public static final double LOOP_TIME = 0.13; //s, 20ms + 110ms sprk max velocity lag
   /**
    * Maximum speed of the robot in meters per second, used to limit acceleration
    */
-  public static final double MAX_SPEED  = Units.feetToMeters(14.5);
+  public static final double MAX_SPEED  = Units.feetToMeters(10);
 
   public static final class DrivebaseConstants {
     /**
@@ -53,8 +53,8 @@ public final class Constants {
     public static final String kCameraName = "limelight";
     public static final String kCamera2Name = "limelight2";
     // Cam mount positions from center (forward, left, up)
-    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-10.6), Units.inchesToMeters(9.7), Units.inchesToMeters(14.1)), new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(-90)));
-    public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(Units.inchesToMeters(-10.6), Units.inchesToMeters(9.7), Units.inchesToMeters(14.1)), new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(-90)));
+    public static final Transform3d kRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(10), Units.inchesToMeters(-9.75), Units.inchesToMeters(15)), new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(-90)));
+    public static final Transform3d kRobotToCam2 = new Transform3d(new Translation3d(Units.inchesToMeters(11.75), Units.inchesToMeters(11.75), Units.inchesToMeters(11.5)), new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(45)));
     // The layout of the AprilTags on the field
     public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     // The standard deviations of our vision estimated poses, which affect correction rate
