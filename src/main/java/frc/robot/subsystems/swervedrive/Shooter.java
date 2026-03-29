@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -45,6 +46,9 @@ public class Shooter extends SubsystemBase {
     private Double distanceToBlueHub;
     private Double distanceToRedHub;
     private boolean closerToRedHub;
+    private Timer timer = new Timer();
+    private Pose2d lastPose;
+
   /**
    * A subsystem handling the entire shooting pipeline, including hopper and intake
    */
@@ -59,11 +63,22 @@ public class Shooter extends SubsystemBase {
       .feedForward.kV(0.000195, ClosedLoopSlot.kSlot0);
     shooterMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     drivetrain = dt;
+    timer.start();
   }
 
   @Override
   public void periodic() {
+    if (timer.hasElapsed(0.25)) {
+      lastPose = getShooterPose(drivetrain);
+      timer.restart();
+    }
     currentPose = getShooterPose(drivetrain);
+    Transform2d dif = currentPose.minus(lastPose);
+    if (Math.abs(dif.getX()) < 0.1 && Math.abs(dif.getY()) < 0.1) {
+      SmartDashboard.putBoolean("Settled: ", true);
+    } else { 
+      SmartDashboard.putBoolean("Settled: ", false);
+    }
     differenceToBlueHub = currentPose.relativeTo(blueHubPose).getTranslation();
     differenceToRedHub = currentPose.relativeTo(redHubPose).getTranslation();
     distanceToBlueHub = differenceToBlueHub.getNorm();

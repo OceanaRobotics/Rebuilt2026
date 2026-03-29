@@ -109,8 +109,7 @@ public class VisionNew {
         var tagPose = photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
         if (tagPose.isEmpty()) continue;
         numTags++;
-        avgDist +=
-        tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
+        avgDist += tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
       }
       if (numTags == 0) {
         // No tags visible. Default to single-tag std devs

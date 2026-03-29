@@ -123,6 +123,7 @@ public class RobotContainer
       driverXbox.a().onTrue(shooter.m_hopper.runSystemAtPercent(0.5, 0.5)).onFalse(shooter.m_hopper.stopSystem());
       driverXbox.leftBumper().onTrue(shooter.aimAtClosestHub(drivebase));
       driverXbox.leftTrigger().onTrue(intake.runSystemAtPercent(0.7)).onFalse(intake.stopRoller());
+      driverXbox.y().onTrue(intake.runSystemAtPercent(-0.7)).onFalse(intake.stopRoller());
       driverXbox.rightTrigger().onTrue(shooter.runShooterSystem(drivebase)).onFalse(shooter.stopFullSystem());
       driverXbox.povUp().onTrue(intake.retractIntake()).onFalse(intake.stopSystem());
       driverXbox.povDown().onTrue(intake.extendIntake()).onFalse(intake.stopSystem());

@@ -90,7 +90,7 @@ public class Intake extends SubsystemBase {
    */
   public Command extendIntake() {
     return run(() -> {
-     intakeMover.set(0.1);
+     intakeMover.set(0.25);
     });
   }
 
